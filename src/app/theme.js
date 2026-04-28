@@ -1,7 +1,26 @@
 import { createTheme } from "@mui/material";
 
 export const theme = createTheme({
-    typography:{
-        fontSize: 16
-    }
-})
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          borderRadius: "5px",
+          boxShadow: theme.shadows[3],
+        }),
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          borderRadius: "5px",
+          boxShadow: theme.shadows[3],
+        }),
+      },
+    },
+    MuiTypography: {
+      // fontSize: 16,
+      fontFamily: "Segoe UI",
+    },
+  },
+});

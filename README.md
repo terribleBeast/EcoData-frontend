@@ -5,31 +5,31 @@ start frontend part
 ```
 npm start
 ```
-start test db
-```
-npm run start-server
-```
-Development steps 1.0v
-- [ ] Front-end
-  - [ ] Fix error in design
-    - [ ] Editing window size leads to offset main field
-    - [ ] Login / Sign in
-    - [ ] Create template for pages
+### Plan
+- [ ] Fix error in design
+  - [ ] Login / Sign in
+- [ ] Sections
+  - [ ] Loading state
   - [ ] Pages
-    - [ ] Analyzator
-      - [ ] Create maket
-      - [ ] Implement page
+    - [ ] Analyzer
+      - [ ] to implement keystroke processing for moving between images
     - [ ] User profile
-      - [ ] Create maket
       - [ ] Implement page
-- [ ] Back-end
-  - [ ] FastAPI
-    - [ ] Endpoints
-      - [ ] User
-        - [ ] Log in
-        - [ ] Sign in
-        - [ ] Edit profile
-      - [ ] Analyzer
-        - [ ] Download img
-  - [ ] PostgreSQL
-  - [ ] Docker
+    - [ ] Researches
+    - [ ] Researchers
+    - [ ] Plants
+    - [ ] Laboratories
+    - [ ] Locations
+    - [ ] Login / Sign in
+      - [ ] Add "Forgot password"
+    - [ ] Loading page
+    - [ ] Not invalid page
+  - [ ] Error handling
+- [ ] Increase performance
+  - [ ] Optimize rendering (RegPage, LoginPage, Analyzer)
+  - [ ] Lazy load
+- [ ] Testing 
+  - [ ] Interface 
+  - [ ] Logic
+### Comments
+Some errors in registration and login process.

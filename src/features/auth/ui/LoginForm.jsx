@@ -1,30 +1,28 @@
-import { useForm } from "react-hook-form"
-import { Button, Grid, TextField, Typography } from "@mui/material"
-import { useNavigate } from 'react-router'
-import { useCallback} from "react"
-import { useDispatch } from "react-redux"
+import { useForm } from "react-hook-form";
+import { Button, Grid, TextField, Typography, Box } from "@mui/material";
+import { useNavigate } from "react-router";
+import { useCallback, useState } from "react";
+import { useDispatch } from "react-redux";
 
 // import { toLogIn } from "../features/user/userSlice"
-import { useLazyGetUserQuery } from "../api"
-import { toLogIn } from "../../user/userSlice"
+import { useLazyGetUserQuery } from "../../api/usersAPI";
+import { toLogIn } from "../../user/userSlice";
 
 // import './../App.css'
 
 const LoginForm = () => {
-
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  // const [message, setMessage] = useState('')
-
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   const {
     register,
     handleSubmit,
     // formState: { errors },
-    watch
+    watch,
   } = useForm();
 
-  const { email, password } = watch()
+  const { email, password } = watch();
 
   // const validateEmail = (value) => {
   //   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
@@ -33,89 +31,93 @@ const LoginForm = () => {
   //   }
   //   return true;
   // };
-  const [getUser,] = useLazyGetUserQuery()
+  //
+  const [getUser] = useLazyGetUserQuery();
 
-  const onSubmit = useCallback(async () => {
+  const onInput = useCallback(async () => {
+    setError("Error input");
+  }, []);
+  const onChange = async () => {
+    setError("Error input");
+  };
 
-
-    // TODO: error proccesing 
-
+  const onSubmit = () => {
+    // Working without async await
+    //
+    // event.preventDefault();
+    console.log("onSubmit");
+    // TODO: error proccesing
     try {
-
-      const user = await getUser(email).unwrap()
+      const user = getUser(email).unwrap();
       if (user !== undefined && user.password === password) {
-        dispatch(toLogIn({
-          login: user.email,
-          id: user.id,
-          name: user.name
-        }))
-        navigate('/')
+        dispatch(
+          toLogIn({
+            login: user.email,
+            id: user.id,
+            name: user.name,
+          }),
+        );
+        navigate("/");
       }
+    } catch (err) {
+      console.log(err);
     }
-    catch (err) {
-      console.log(err)
-    }
-
-
-
-  }, [email, password, dispatch, getUser, navigate])
-
+  };
 
   return (
-    <div className="login-form"
-    >
-      <Typography className="login-form-title">
-        Вход
-      </Typography>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Grid >
-          <Grid  item>
-            <Typography>
-              Email
-            </Typography>
-            <TextField {
-              ...register('email', {
-                required: 'Email is required',
-                className: "login-input",
-                pattern: {
-                  value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
-                  message: 'Invalid email address',
-                }
-              })}
-              variant="outlined"
-            />
-          </Grid>
-          <Grid  item>
-            <Typography>
-              Пароль
-            </Typography>
-            <TextField {
-              ...register('password',
+    <div className="login-form">
+      <Box
+        sx={{
+          width: "100%",
+        }}
+      >
+        <Typography className="login-form-title">Вход</Typography>
+      </Box>
+      <form
+        style={{ width: "100%" }}
+        // onSubmit={handleSubmit(onSubmit)}>
+        onSubmit={onSubmit}
+      >
+        <Grid sx={{ width: "100%", "& > *": { width: "100%" } }}>
+          <Grid item>
+            <Typography className="form-field-text">Email</Typography>
 
-                {
-                  required: true, minLenght: 4,
-                  className: "login-input"
-                })
-            }
-              type="password"
+            <TextField
+              // {...register("email", {
+              //   required: true,
+              //   pattern: {
+              //     value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+              //     message: "Invalid email address",
+              //   },
+              // })}
+              variant="outlined"
+              className="login-input"
+              // onInput={onInput}
+              onChange={onChange}
+              // error={error}
             />
           </Grid>
-          <Grid item >
-            <Button
-              type="submit"
-              className="login-button"
-            >Войти
+          <Grid item>
+            <Typography className="form-field-text">Пароль</Typography>
+            <TextField
+              // {...register("password", {
+              //   required: true,
+              //   minLenght: 4,
+              // })}
+              type="password"
+              className="login-input"
+              // error={error}
+            />
+          </Grid>
+          <Grid item>
+            <Button type="submit" className="login-button">
+              Войти
             </Button>
           </Grid>
-
         </Grid>
-
       </form>
-
-
-
     </div>
-  )
-}
+  );
+};
 
 export default LoginForm;

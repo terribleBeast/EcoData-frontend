@@ -1,27 +1,19 @@
 // import '../App.css'
-import { Box } from '@mui/material'
-import LeftMenu from '../LeftMenu';
-import { Outlet } from 'react-router';
-import Footer from './Footer';
-import Header from './Header';
+import { Box } from "@mui/material";
+import LeftMenu from "../LeftMenu";
+import { Outlet } from "react-router";
+
 function Content() {
-
-
-
-    return (
-        <Box >
-            <Header />
-
-            <main >
-                <LeftMenu></LeftMenu>
-                <div className="tmp-page">
-                    <Outlet/>
-                </div>
-           
-            </main>
-            <Footer />
-        </Box>
-    )
+  return (
+    <Box>
+      <main style={{ height: "100hv" }}>
+        <LeftMenu></LeftMenu>
+        <div className="content-surface">
+          <Outlet />
+        </div>
+      </main>
+    </Box>
+  );
 }
 
 export default Content;
