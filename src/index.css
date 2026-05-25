@@ -6,30 +6,11 @@ body {
         sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    width: 100dvw;
+    height: 100dvh;
 }
 
 code {
     font-family:
         source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
-}
-
-main {
-    padding: 2rem;
-    background-color: var(--color-bg);
-    /*TODO: fix height for small screens*/
-    /*height: 100vh;*/
-    /*transition: margin-left 0.3s ease;*/
-}
-
-.page-title {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--color-text);
-    margin-bottom: 1rem;
-}
-
-.page-subtitle {
-    font-size: 1rem;
-    color: var(--color-muted);
-    margin-bottom: 2rem;
 }
