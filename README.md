@@ -6,10 +6,10 @@ start frontend part
 npm start
 ```
 ### Plan
-- [ ] Fix error in design
-  - [ ] Login / Sign in
+- [x] Fix error in design
+  - [x] Login / Sign in
 - [ ] Sections
-  - [ ] Loading state
+  - [x] Loading state
   - [ ] Pages
     - [ ] Analyzer
       - [ ] to implement keystroke processing for moving between images
@@ -22,12 +22,12 @@ npm start
     - [ ] Locations
     - [ ] Login / Sign in
       - [ ] Add "Forgot password"
-    - [ ] Loading page
-    - [ ] Not invalid page
+    - [x] Loading page
+    - [x] Not invalid page
   - [ ] Error handling
 - [ ] Increase performance
-  - [ ] Optimize rendering (RegPage, LoginPage, Analyzer)
-  - [ ] Lazy load
+  - [x] Optimize rendering (RegPage, LoginPage, Analyzer)
+  - [x] Lazy load
 - [ ] Testing 
   - [ ] Interface 
   - [ ] Logic
