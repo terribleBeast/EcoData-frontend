@@ -1,28 +1,24 @@
 import { useForm } from "react-hook-form";
-import { Grid } from "@mui/material";
 import { useState } from "react";
 
 import type { IFormLogInProps } from "../types";
 import type { ICheckExistUser } from "@/shared/types/user";
+import { ForgotPasswordButton } from "../components/authPageButtons";
+import { AuthFormTemplate } from "@/features/auth/components/AuthFormTemplate";
 import {
   EmailField,
   PasswordField,
-  type IFieldProps,
-} from "../components/FormFields";
-import { ForgotPasswordButton } from "../components/authPageButtons";
-import { AuthFormTemplate } from "../components/AuthFormTemplate";
+} from "@/shared/components/formFields/index";
+import type { ICommonFieldProps } from "@/shared/types/form";
 
 const LoginForm = ({
-  isLoading,
+  endpointState,
   onSubmit,
-  isError,
-  errorMsg,
-  onForgotPassword,
+  isLogInForm,
   onSwitchForm,
-}: IFormLogInProps) => {
+  onForgotPassword,
+}: IFormLogInProps<ICheckExistUser>) => {
   const [showPassword, setShowPassword] = useState(false);
-
-  const handleShowPassword = () => setShowPassword((prev) => !prev);
 
   const {
     register,
@@ -33,10 +29,10 @@ const LoginForm = ({
     reValidateMode: "onSubmit",
   });
 
-  const fieldProps: IFieldProps = {
-    register,
-    errors,
-    isLoading,
+  const commonFieldProps: ICommonFieldProps<ICheckExistUser> = {
+    isLoading: endpointState.isLoading,
+    errors: errors,
+    register: register,
   };
 
   return (
@@ -44,25 +40,27 @@ const LoginForm = ({
       title="Вход"
       submitLabel="Войти"
       submitLoadingLabel="Вход..."
-      isLoading={isLoading}
-      isError={isError}
-      errorMsg={errorMsg}
-      isLoginForm
-      onSubmit={handleSubmit(onSubmit)}
+      endpointState={endpointState}
+      isLogInForm={isLogInForm}
       onSwitchForm={onSwitchForm}
+      onSubmit={handleSubmit(onSubmit)}
     >
-      <EmailField {...fieldProps} />
+      <EmailField<ICheckExistUser> {...commonFieldProps} name="email" />
 
-      <PasswordField
-        {...fieldProps}
+      <PasswordField<ICheckExistUser>
+        isLoading={endpointState.isLoading}
+        errors={errors}
+        register={register}
+        name="password_hash"
         showPassword={showPassword}
-        onClickEye={handleShowPassword}
+        onClickEye={() => setShowPassword((prev) => !prev)}
       />
 
       {/* Forgot password — right-aligned below the password field */}
-      <Grid size={12} sx={{ display: "flex", justifyContent: "flex-end" }}>
-        <ForgotPasswordButton onClick={onForgotPassword} disabled={isLoading} />
-      </Grid>
+      <ForgotPasswordButton
+        onClick={onForgotPassword}
+        disabled={endpointState.isLoading}
+      />
     </AuthFormTemplate>
   );
 };

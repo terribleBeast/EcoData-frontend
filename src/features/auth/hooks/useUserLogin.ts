@@ -9,8 +9,6 @@ export const useUserLogin = () => {
     useLoginMutation();
   const hasNavigated = useRef(false);
 
-  // Navigate on successful login (slice already updated via extraReducers)
-  console.log(data, isSuccess);
   useEffect(() => {
     if (isSuccess && data && !hasNavigated.current) {
       hasNavigated.current = true;
@@ -21,5 +19,13 @@ export const useUserLogin = () => {
   const handleLogIn = (credentials: ICheckExistUser) => {
     login(credentials);
   };
-  return { handleLogIn, isLoading, isError, error };
+  return {
+    handleLogIn,
+    endpointState: {
+      isLoading,
+      isSuccess,
+      isError,
+      error: error,
+    },
+  };
 };

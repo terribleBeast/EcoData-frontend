@@ -25,5 +25,5 @@ export interface IResearchDataFull {
 
 export interface IPredictionTable {
   headers: string[];
-  rows: IPrediction[][];
+  rows: number[][];
 }

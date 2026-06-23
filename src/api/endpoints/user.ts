@@ -14,9 +14,7 @@ export const userEndpoints = apiSlice.injectEndpoints({
         method: "POST",
         body: credentials,
       }),
-      transformResponse: (response: { data: IAuthUser }) => {
-        return response.data;
-      },
+      transformResponse: (response: { data: IAuthUser }) => response.data,
     }),
     // Register
     createResearcher: builder.mutation<IAuthUser, ICreateUser>({

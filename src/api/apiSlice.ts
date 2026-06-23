@@ -4,5 +4,6 @@ import { apiConfig } from "./config";
 export const apiSlice = createApi({
   reducerPath: "api/v1",
   baseQuery: fetchBaseQuery(apiConfig),
+  tagTypes: ["Researchers", "Researches", "Plants", "Labs", "Locations"],
   endpoints: () => ({}),
 });

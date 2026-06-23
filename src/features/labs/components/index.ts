@@ -1,0 +1,1 @@
+export { LabFullInfo } from "./LabFullInfo";

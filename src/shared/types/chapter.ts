@@ -1,6 +1,6 @@
 export interface IChapterField {
   name: string;
-  value: string;
+  value: string | React.ReactElement;
 }
 
 export interface IChapterData {

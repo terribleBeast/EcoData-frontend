@@ -1,85 +1,49 @@
-import {
-  Alert,
-  Box,
-  Button,
-  CircularProgress,
-  Grid,
-  Typography,
-} from "@mui/material";
-import type { ReactNode } from "react";
+import { Grid } from "@mui/material";
 
-import { deriveErrorMessage } from "../utils";
-import { formStyle, formTitleStyle } from "../ui/styles";
 import { StateFormButton } from "./authPageButtons";
-import type { IFormProps } from "../types";
+import React from "react";
+import type { IFormEntityTemplateProps } from "@/shared/types/form";
+import { FormTemplate } from "@/shared/ui/FormTemplate";
+import { SubmitFormButton } from "@/shared/components/SubmitFormButton";
 
-export interface IAuthFormTemplateProps extends IFormProps {
-  title: string;
-  submitLabel: string;
-  submitLoadingLabel: string;
-  onSubmit: (e?: React.BaseSyntheticEvent) => void;
+export interface IAuthFormTemplateProps extends IFormEntityTemplateProps {
+  isLogInForm: boolean;
   onSwitchForm: () => void;
-  isLoginForm: boolean;
-  children: ReactNode;
 }
 
 export const AuthFormTemplate = ({
   title,
   submitLabel,
   submitLoadingLabel,
-  isLoading,
-  isError,
-  errorMsg,
+  endpointState,
   onSubmit,
+  isLogInForm,
   onSwitchForm,
-  isLoginForm,
   children,
-}: IAuthFormTemplateProps) => (
-  <Box sx={formStyle}>
-    {/* Title */}
-    <Typography sx={formTitleStyle}>{title}</Typography>
+}: IAuthFormTemplateProps) => {
+  return (
+    <FormTemplate
+      title={title}
+      endpointState={endpointState}
+      onSubmit={onSubmit}
+    >
+      {/* Injected fields */}
+      {React.Children.map(children, (child) => (
+        <Grid size={12}> {child}</Grid>
+      ))}
 
-    {/* Server-level error */}
-    {isError && (
-      <Alert severity="error" sx={{ mb: 2, width: "100%" }}>
-        {deriveErrorMessage(errorMsg)}
-      </Alert>
-    )}
-
-    {/* Form */}
-    <Box component="form" sx={{ width: "100%" }} noValidate onSubmit={onSubmit}>
-      <Grid container spacing={2}>
-        {/* Injected fields */}
-        {children}
-
-        {/* Submit */}
-        <Grid size={12}>
-          <Button
-            type="submit"
-            variant="contained"
-            color="success"
-            fullWidth
-            disabled={isLoading}
-            startIcon={isLoading ? <CircularProgress size={20} /> : undefined}
-            sx={(theme) => ({
-              "&:hover": {
-                backgroundColor: theme.palette.primary.dark,
-              },
-            })}
-          >
-            {isLoading ? submitLoadingLabel : submitLabel}
-          </Button>
-        </Grid>
-
-        {/* Switch to other form */}
-        <Grid size={12}>
-          <StateFormButton
-            isLoginForm={isLoginForm}
-            isLoading={isLoading}
-            onClick={onSwitchForm}
-          />
-        </Grid>
-      </Grid>
-    </Box>
-  </Box>
-);
+      {/* Submit */}
+      <SubmitFormButton
+        isLoading={endpointState.isLoading}
+        submitLabel={submitLabel}
+        submitLoadingLabel={submitLoadingLabel}
+      />
+      {/* Switch to other form */}
+      <StateFormButton
+        isLoginForm={isLogInForm}
+        isLoading={endpointState.isLoading}
+        onClick={onSwitchForm}
+      />
+    </FormTemplate>
+  );
+};

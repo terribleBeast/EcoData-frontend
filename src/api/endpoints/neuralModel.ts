@@ -1,15 +1,37 @@
 import type { IImageData, IPrediction } from "@/shared/types/image";
 import { apiSlice } from "../apiSlice";
+import type { ISpecies } from "@/shared/types";
 
-const neuralModelEndpoints = apiSlice.injectEndpoints({
+export const neuralModelEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    updatePrediction: builder.mutation<IPrediction[], IImageData>({
-      query: (image) => `/neural-models/predictions/${image.classifier}`,
-      transformResponse: (response: { data: IPrediction[] }): IPrediction[] =>
+    getClassifiers: builder.query<ISpecies[], string>({
+      query: (id) => `/classifiers/${id}`,
+      transformResponse: (response: { data: ISpecies[] }): ISpecies[] =>
         response.data,
-      transformErrorResponse: (response) => console.error(response.status),
+    }),
+    updatePrediction: builder.mutation<
+      IPrediction[],
+      { file: File; genus_id: string }
+    >({
+      query: ({ file, genus_id }) => {
+        const formData = new FormData();
+        formData.append("image", file);
+        return {
+          url: `/classifiers/predictions/${genus_id}`,
+          method: "POST",
+          body: formData,
+        };
+      },
+      transformResponse: (response: { data: IPrediction[] }): IPrediction[] => {
+        console.log(response, response.data);
+        return response.data;
+      },
     }),
   }),
 });
 
-export const { useUpdatePredictionMutation } = neuralModelEndpoints;
+export const {
+  useUpdatePredictionMutation,
+  useLazyGetClassifiersQuery,
+  useGetClassifiersQuery,
+} = neuralModelEndpoints;

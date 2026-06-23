@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { RootStateType } from "../../app/store";
+import type { RootStateType } from "@/app/store";
 import type { IAuthUser } from "@/shared/types/user";
 import { userEndpoints } from "@/api/endpoints";
 
@@ -9,6 +9,15 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
+  // user: {
+  //   id: 1,
+  //   email: "kovalenko@gmail.com",
+  //   name: "Иван",
+  //   surname: "Иванов",
+  //   patronymic: "Иванович",
+  //   token: "1234",
+  // },
+  // token: "1234",
   user: null,
   token: localStorage.getItem("userToken"),
 };
@@ -30,6 +39,7 @@ export const authSlice = createSlice({
     builder.addMatcher(
       userEndpoints.endpoints.login.matchFulfilled,
       (state, { payload }: PayloadAction<IAuthUser>) => {
+        console.log(payload);
         state.user = payload;
         state.token = payload.token;
         localStorage.setItem("userToken", payload.token ?? "");

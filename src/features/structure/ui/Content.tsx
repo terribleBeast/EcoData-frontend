@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import LeftMenu from "../components/LeftMenu";
 import { Outlet } from "react-router";
 
-function Content() {
+function Content({ isOpenLeftMenu }: { isOpenLeftMenu: boolean }) {
   return (
     <Box
       component="main"
@@ -17,7 +17,7 @@ function Content() {
       })}
     >
       {/*{ TODO: Toggle menu, and }*/}
-      <LeftMenu />
+      {isOpenLeftMenu ? <LeftMenu /> : null}
       <Box
         sx={(theme) => ({
           backgroundColor: theme.palette.background.default,

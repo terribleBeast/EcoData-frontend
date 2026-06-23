@@ -4,7 +4,7 @@ import {
   Link as MuiLink,
   Typography,
 } from "@mui/material";
-import { actionLinkSx } from "../ui/styles";
+import { actionLinkSx } from "../../../shared/ui/styles";
 import { Link as RouterLink } from "react-router";
 export const ForgotPasswordButton = ({
   onClick,
@@ -26,12 +26,7 @@ export const ForgotPasswordButton = ({
     </Button>
   );
 };
-export const WithoutAuthButton = ({
-  onClick,
-}: {
-  onClick: () => void;
-  textState: boolean;
-}) => (
+export const WithoutAuthButton = ({ onClick }: { onClick: () => void }) => (
   <MuiLink
     component={RouterLink}
     to="/"

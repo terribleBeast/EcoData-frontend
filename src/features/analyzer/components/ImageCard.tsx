@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { Paper, Box, Typography } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import {
@@ -34,6 +34,7 @@ export const ImageCard = memo(
         sx={{
           padding: "0.5rem",
           width: "150px",
+          height: "250px",
           boxShadow: borderStyle,
           display: "flex",
           flexDirection: "column",

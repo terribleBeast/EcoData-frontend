@@ -25,7 +25,6 @@ export interface IImageData {
   id: number;
   key: string;
   src: string | undefined;
-  file: File;
   name: string;
   predictions?: IPrediction[];
   status: ImageStatusType;

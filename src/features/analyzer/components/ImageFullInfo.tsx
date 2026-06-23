@@ -4,17 +4,17 @@ import {
   TableHead,
   TableRow,
   TableBody,
-  Card,
   Button,
-  CardHeader,
-  CardContent,
   Typography,
   Box,
   Paper,
 } from "@mui/material";
-import { DialogPanel } from "../../../shared/components/DialogPanel";
+import { DialogPanel } from "@/shared/components/DialogPanel";
 import { type IImageData, type IPrediction } from "../../../shared/types/image";
 import type { MRT_ColumnDef } from "material-react-table";
+import type { IChapterData } from "@/shared/types";
+import { ChapterInfoTemplate } from "@/shared/ui/ChapterInfoTemplate";
+import { DialogSection } from "@/shared/ui/layout";
 
 const columns: MRT_ColumnDef<IPrediction>[] = [
   {
@@ -24,15 +24,67 @@ const columns: MRT_ColumnDef<IPrediction>[] = [
     header: "Вероятность",
   },
 ];
-export const ImageFullInfo = ({ image }: { image: IImageData }) => {
-  console.log("image FULL");
 
+export const ImageFullInfo = ({ image }: { image: IImageData }) => {
   const bestValue =
     image.predictions !== null && image.predictions !== undefined
       ? image.predictions.reduce((max, current) =>
           current.probability > max.probability ? current : max,
         )
       : null;
+
+  const chapterInfo: IChapterData[] = [
+    {
+      title: "Общая",
+      fields: [
+        { name: "Имя", value: image.name },
+        { name: "Статус", value: image.status },
+      ],
+    },
+    {
+      title: "Результаты анализа",
+      fields: (
+        <>
+          <Typography sx={{ fontWeight: "bold" }} gutterBottom>
+            Выбранный классификатор:{" "}
+            <Typography sx={{ display: "inline" }}>
+              {image.classifier}
+            </Typography>
+          </Typography>
+          {image.predictions !== null && image.predictions !== undefined ? (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  {columns.map((column, index) => (
+                    <TableCell key={index}>{column.header}</TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {image.predictions.map((prediction, index) => (
+                  <TableRow
+                    key={index}
+                    style={{
+                      backgroundColor:
+                        bestValue &&
+                        prediction.probability === bestValue.probability
+                          ? "lightgreen"
+                          : "",
+                    }}
+                  >
+                    <TableCell>{prediction.classifier}</TableCell>
+                    <TableCell>{prediction.probability.toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <Typography>Нет предсказаний</Typography>
+          )}
+        </>
+      ),
+    },
+  ];
 
   return (
     <DialogPanel>
@@ -86,7 +138,7 @@ export const ImageFullInfo = ({ image }: { image: IImageData }) => {
           </Button>
         </Box>
       </Paper>
-      <Paper
+      {/*<Paper
         elevation={3}
         sx={{
           width: "100%",
@@ -94,84 +146,11 @@ export const ImageFullInfo = ({ image }: { image: IImageData }) => {
           flexDirection: "column",
           padding: "1rem",
         }}
-      >
-        <Typography
-          gutterBottom
-          sx={(theme) => ({
-            fontSize: "2.2rem",
-            marginBottom: "1.5rem",
-            fontWeight: 600,
-            color: theme.palette.secondary.main,
-            height: "10%",
-            alignSelf: "center",
-          })}
-        >
-          Информация об изображении
-        </Typography>
-
-        <Box sx={{ height: "90%" }}>
-          <Card elevation={2} sx={{ marginBottom: "16px" }}>
-            <CardHeader title="Общая информация" />
-            <CardContent>
-              <Typography sx={{ fontWeight: "bold" }}>
-                Имя:{" "}
-                <Typography sx={{ display: "inline" }}>
-                  {image.name !== undefined ? image.name : "Не найдено"}
-                </Typography>
-              </Typography>
-              <Typography sx={{ fontWeight: "bold" }}>
-                Статус:{" "}
-                <Typography sx={{ display: "inline" }}>
-                  {image.status}
-                </Typography>
-              </Typography>
-            </CardContent>
-          </Card>
-          <Card elevation={2} sx={{ marginBottom: "16px" }}>
-            <CardHeader title="Результаты анализа" />
-            <CardContent>
-              <Typography sx={{ fontWeight: "bold" }} gutterBottom>
-                Выбранный классификатор:{" "}
-                <Typography sx={{ display: "inline" }}>
-                  {image.classifier}
-                </Typography>
-              </Typography>
-              {image.predictions !== null && image.predictions !== undefined ? (
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      {columns.map((column, index) => (
-                        <TableCell key={index}>{column.header}</TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {image.predictions.map((prediction, index) => (
-                      <TableRow
-                        key={index}
-                        style={{
-                          backgroundColor:
-                            bestValue &&
-                            prediction.probability === bestValue.probability
-                              ? "lightgreen"
-                              : "",
-                        }}
-                      >
-                        <TableCell>{prediction.classifier}</TableCell>
-                        <TableCell>
-                          {prediction.probability.toFixed(2)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <Typography>Нет предсказаний</Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Box>
-      </Paper>
+      >*/}
+      <DialogSection title="Информация">
+        <ChapterInfoTemplate chaptersInfo={chapterInfo} />
+      </DialogSection>
+      {/*</Paper>*/}
     </DialogPanel>
   );
 };

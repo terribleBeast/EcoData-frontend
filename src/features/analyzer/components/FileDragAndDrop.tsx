@@ -1,10 +1,10 @@
 import { useCallback } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 import { useDropzone } from "react-dropzone";
 import type { IImageData, ImageStatusType } from "@/shared/types/image";
 
-interface FileDragAndDropProps {
+export interface IFileDragAndDropProps {
   onImagesAdded: (newImages: IImageData[]) => void;
   defaultStatus: ImageStatusType;
   selectedClassifier: string;
@@ -14,7 +14,7 @@ export const FileDragAndDrop = ({
   onImagesAdded,
   defaultStatus,
   selectedClassifier,
-}: FileDragAndDropProps) => {
+}: IFileDragAndDropProps) => {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const newFiles: IImageData[] = acceptedFiles.map((file) => ({
@@ -42,34 +42,42 @@ export const FileDragAndDrop = ({
   });
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Paper
+      {...getRootProps()}
+      sx={{
+        padding: "0.5rem",
+        width: "150px",
+        // boxShadow: borderStyle,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
       <Box
-        {...getRootProps()}
         sx={{
-          border: "2px dashed",
-          borderColor: isDragActive ? "primary.main" : "divider",
-          borderRadius: 2,
-          p: 4,
-          textAlign: "center",
-          mb: 3,
-          cursor: "pointer",
-          bgcolor: isDragActive ? "action.hover" : "background.paper",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        <input {...getInputProps()} />
-        <CloudUpload
-          fontSize="large"
-          color={isDragActive ? "primary" : "action"}
-        />
-        <Typography>
-          {isDragActive
-            ? "Отпустите файлы здесь"
-            : "Перетащите файлы сюда или кликните для выбора"}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Поддерживаются изображения
-        </Typography>
+        <Box>
+          <input {...getInputProps()} />
+          <CloudUpload
+            fontSize="large"
+            color={isDragActive ? "primary" : "action"}
+          />
+          {/*<Typography>
+            {isDragActive
+              ? "Отпустите файлы здесь"
+              : "Перетащите файлы сюда или кликните для выбора"}
+          </Typography>*/}
+          <Typography variant="caption" color="text.secondary">
+            Поддерживаются изображения
+          </Typography>
+        </Box>
+        {/*</Box>*/}
+        {/*</Box>*/}
       </Box>
-    </Box>
+    </Paper>
   );
 };

@@ -1,4 +1,3 @@
 export * from "./DialogPanel";
-export * from "./LoadingComponent";
-export * from "./NotValidPathComponent";
-export * from "./Templates";
+export * from "../ui/states/LoadingState";
+export * from "../ui/states/NotValidPathComponent";

@@ -65,6 +65,8 @@ const ChapterCards = () => {
               borderRadius: "16px",
               // display: "inline",
               height: "stretch",
+              maxWidth: "25dvw",
+
               paddingLeft: "1rem",
               paddingRight: "1rem",
               "&:hover": { boxShadow: 3 },
@@ -134,6 +136,7 @@ const ChapterGetStarted = () => {
                 flexDirection: "column",
                 alignItems: "center",
                 textAlign: "center",
+                maxWidth: "18dvw",
                 boxShadow: 1,
                 "&:hover": { boxShadow: 3 },
               }}
@@ -194,6 +197,7 @@ const Home = () => {
         border: `1px solid ${theme.palette.border}`,
         borderRadius: "5px",
         height: "100%",
+        // maxWidth: "90dvw",
         width: "100%",
         margin: "1.5rem",
         padding: "1.5rem",

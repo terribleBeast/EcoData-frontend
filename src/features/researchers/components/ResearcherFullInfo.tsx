@@ -1,16 +1,25 @@
-import { ListItemButton, List, Link, Card } from "@mui/material";
-import {
-  ChapterInfoTemplate,
-  DialogChapters,
-} from "@/shared/components/Templates";
+import { Card, Typography } from "@mui/material";
 import { DialogPanel } from "@/shared/components/DialogPanel";
 import type { IChapterData } from "@/shared/types";
-import type { ISelectedResearcher } from "../types";
+import { DialogSection } from "@/shared/ui/layout";
+import { ChapterInfoTemplate } from "@/shared/ui/ChapterInfoTemplate";
+import type { IResearchData } from "@/shared/types/research";
+import type { IResearcherDataFull } from "@/shared/types/researcher";
+import { ResearchesList } from "./ResearchesList";
+
+const checkNull = (field: string | undefined) =>
+  field ? field : <Typography sx={{ fontStyle: "italic" }}> Нет </Typography>;
 
 export const ResearcherFullInfo = ({
   researcher,
+  researchesQuery,
 }: {
-  researcher: ISelectedResearcher;
+  researcher: IResearcherDataFull;
+  researchesQuery: {
+    data?: IResearchData[];
+    isLoading: boolean;
+    isError: boolean;
+  };
 }) => {
   const chaptersInfo: IChapterData[] = [
     {
@@ -29,8 +38,8 @@ export const ResearcherFullInfo = ({
           value: researcher.patronymic,
         },
         {
-          name: "Должность",
-          value: researcher.job,
+          name: "Работа",
+          value: checkNull(researcher.job),
         },
       ],
     },
@@ -43,31 +52,21 @@ export const ResearcherFullInfo = ({
         },
         {
           name: "Телефон",
-          value: researcher.phone,
+          value: checkNull(researcher.phoneNumber),
         },
       ],
     },
   ];
   return (
     <DialogPanel>
-      <DialogChapters title={"Исследования"}>
+      <DialogSection title={"Исследования"}>
         <Card sx={{ overflowY: "auto", maxHeight: "60vh" }}>
-          <List>
-            {researcher.researches.map((item, index) => (
-              <ListItemButton
-                href={`/researches?research_id=${item.id}`}
-                key={index}
-              >
-                {index + 1}.&nbsp;
-                <Link>{item.title}</Link>
-              </ListItemButton>
-            ))}
-          </List>
+          <ResearchesList researchesQuery={researchesQuery} />
         </Card>
-      </DialogChapters>
-      <DialogChapters title="Профиль исследователя">
+      </DialogSection>
+      <DialogSection title="Профиль исследователя">
         <ChapterInfoTemplate chaptersInfo={chaptersInfo} />
-      </DialogChapters>
+      </DialogSection>
     </DialogPanel>
   );
 };

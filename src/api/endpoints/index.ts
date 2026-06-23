@@ -1,3 +1,5 @@
+export * from "./lab";
+export * from "./location";
 export * from "./logs";
 export * from "./neuralModel";
 export * from "./plant";

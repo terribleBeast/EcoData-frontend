@@ -6,20 +6,31 @@ import { useNavigate } from "react-router";
 export const useUserReg = () => {
   const navigate = useNavigate();
 
-  const [register, { data, isLoading, isError, error, isSuccess }] =
-    useCreateResearcherMutation();
+  const [register, registerResult] = useCreateResearcherMutation();
 
   const hasNavigated = useRef(false);
   useEffect(() => {
-    if (isSuccess && data && !hasNavigated.current) {
+    if (
+      registerResult.isSuccess &&
+      registerResult.data &&
+      !hasNavigated.current
+    ) {
       hasNavigated.current = true;
       navigate("/");
     }
-  }, [isSuccess, data, hasNavigated, navigate]);
+  }, [registerResult.isSuccess, registerResult.data, hasNavigated, navigate]);
 
   const handleReg = (userData: ICreateUser) => {
     register(userData);
   };
 
-  return { handleReg, isLoading, isError, error };
+  return {
+    handleReg,
+    endpointState: {
+      isLoading: registerResult.isLoading,
+      isError: registerResult.isError,
+      error: registerResult.error,
+      isSuccess: registerResult.isSuccess,
+    },
+  };
 };

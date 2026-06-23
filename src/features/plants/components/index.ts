@@ -1,0 +1,1 @@
+export { PlantFullInfo } from "./PlantFullInfo";

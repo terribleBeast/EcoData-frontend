@@ -1,37 +1,68 @@
-import { Typography, AppBar, Toolbar, Button, Box } from "@mui/material";
+import {
+  Typography,
+  AppBar,
+  Toolbar,
+  Button,
+  Box,
+  Link as MuiLink,
+} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
-import SpaIcon from "@mui/icons-material/Spa";
-import { Link } from "react-router";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Link as RouterLink } from "react-router";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectIsAuthenticated,
+  selectUserInfo,
   userLoggedOut,
 } from "@/features/user/authSlice";
 
-function Header() {
+function Header({
+  handleToggleLeftMenu,
+}: {
+  handleToggleLeftMenu: () => void;
+}) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLogIn = useSelector(selectIsAuthenticated);
+  const user = useSelector(selectUserInfo);
+  const username = `${user?.surname} ${user?.name[0]}. ${user?.surname[0]}.`;
   return (
-    <AppBar position="static" sx={{ width: "100dvw" }}>
-      <Toolbar>
-        <IconButton
-          size="large"
-          edge="start"
-          color="inherit"
-          aria-label="menu"
-          sx={{ mr: 2 }}
-          component={Link}
-          to="/"
+    <AppBar position="static" sx={{ width: "100%" }}>
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            direction: "row",
+          }}
         >
-          <SpaIcon />
-        </IconButton>
-
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          EcoData
-        </Typography>
-
+          <IconButton
+            size="large"
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            sx={{ mr: 2 }}
+            onClick={handleToggleLeftMenu}
+          >
+            <MenuIcon />
+          </IconButton>
+          <MuiLink
+            component={RouterLink}
+            to="/"
+            style={{
+              all: "unset",
+              cursor: "pointer",
+              alignContent: "center",
+            }}
+          >
+            <Typography variant="h6">EcoData</Typography>
+          </MuiLink>
+        </Box>
         {isLogIn ? (
           <Box>
             <Button
@@ -42,8 +73,7 @@ function Header() {
               }}
               sx={{ textTransform: "none" }}
             >
-              {/*<Typography>{user?.name} </Typography>*/}
-              Выйти
+              {user ? <Typography>{username} </Typography> : "Выйти"}
             </Button>
           </Box>
         ) : (
