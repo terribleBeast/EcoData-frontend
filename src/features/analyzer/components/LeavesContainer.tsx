@@ -1,38 +1,26 @@
 import Box from "@mui/material/Box";
+import { Typography } from "@mui/material";
 import { ImageCard } from "./ImageCard";
 import type { IImageData, IPrediction } from "@/shared/types/image";
-import { Typography } from "@mui/material";
 
 export interface ILeafData {
   leaf_id: string;
-  image_id: number;
-  selected_species_id: string;
-  predictionResults: IPrediction;
+  image_key: string;
+  image: IImageData;
+  predictions: IPrediction[];
+  bestPrediction?: IPrediction;
 }
-
 interface LeavesContainerProps {
-  /** Map<image, leaves[]> — one image can have many leaves */
-  images: IImageData[];
-  leavesImage: Map<number, ILeafData[]>;
+  leaves: ILeafData[];
   onDelete: (leaf_id: string) => void;
-  addLeaves: (leaves: ILeafData[]) => void;
+  onOpen: (leaf: ILeafData) => void;
 }
 
 export const LeavesContainer = ({
-  addLeaves,
+  leaves,
   onDelete,
-  images,
-  leavesImage,
+  onOpen,
 }: LeavesContainerProps) => {
-  // Flatten all leaves from the Map, keeping a reference to their parent image
-
-  const leafEntries: { leaf: ILeafData; image: IImageData }[] = [];
-  leavesImage.forEach((leaf, image_id) => {
-    leaf.forEach((leaf) => {
-      leafEntries.push({ leaf, image: images[image_id] });
-    });
-  });
-
   return (
     <Box
       sx={{
@@ -47,20 +35,21 @@ export const LeavesContainer = ({
         overflowY: "auto",
       }}
     >
-      {leafEntries.map(({ leaf, image }, index) => (
+      {leaves.map((leaf) => (
         <ImageCard
           key={leaf.leaf_id}
-          image={image}
-          onOpen={() => {}}
+          image={leaf.image}
+          prediction={leaf.bestPrediction}
+          onOpen={() => onOpen(leaf)}
           onDelete={() => onDelete(leaf.leaf_id)}
           onUpdate={() => {}}
         />
       ))}
-      {leafEntries.length === 0 && (
+      {leaves.length === 0 && (
         <Typography
           sx={{ color: "text.secondary", fontStyle: "italic", padding: "1rem" }}
         >
-          Нет листьев — загрузите изображения и запустите обработку
+          Выполните анализ изображений, чтобы увидеть полученные листья
         </Typography>
       )}
     </Box>

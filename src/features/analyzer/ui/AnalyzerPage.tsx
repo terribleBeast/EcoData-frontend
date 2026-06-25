@@ -1,6 +1,5 @@
 import { Dialog } from "@mui/material";
 import { useAnalyzerPage } from "../hooks/useAnalyzerPage";
-import { exportImagesToCsv } from "../utils";
 import {
   ImageFullInfo,
   ImagesContainer,
@@ -10,19 +9,35 @@ import { PageChapter } from "@/shared/ui/layout/PageChapter";
 import { AnalyzerHeader } from "./AnalyzerHeader";
 import { useClassifiers } from "../hooks/useClassifiers";
 import { useSelector } from "react-redux";
-import {
-  markImagesProcessing,
-  replaceProcessedImages,
-  selectGenus,
-  selectImages,
-  selectImagesCount,
-} from "../analyzerSlice";
+import { selectImages, selectImagesCount } from "../analyzerSlice";
 import { LeavesContainer } from "../components/LeavesContainer";
+import LeafFullInfo from "../components/LeafFullInfo";
+import { LeavesHeader } from "./LeavesHeader";
+import { useGetResearchesQuery } from "@/api/endpoints";
 
 const AnalyzerPage = () => {
   const images = useSelector(selectImages);
 
   const imagesCount = useSelector(selectImagesCount);
+  const researchesQuery = useGetResearchesQuery();
+  const handleAddToResearch = (research: {
+    id?: string;
+    research_id?: string;
+    title: string;
+  }) => {
+    const researchId = research.id ?? research.research_id;
+
+    if (!researchId) return;
+
+    console.log("Selected research:", researchId);
+
+    // Later: call mutation here.
+    // Example:
+    // addAnalyzerLeavesToResearch({
+    //   researchId,
+    //   leaves,
+    // });
+  };
   const {
     selectedGenus,
     classifiers,
@@ -39,12 +54,15 @@ const AnalyzerPage = () => {
     openImageFullInfo,
     closeImageFullInfo,
     handleProcessImages,
-    handleAddLeaves,
     handleDeleteLeaves,
-    leavesImage,
+    leaves,
     isProcessing,
     progress,
+    closeLeafFullInfo,
+    openLeafFullInfo,
+    selectedLeaf,
   } = useAnalyzerPage();
+
   const handleDownloadResult = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     // exportImagesToCsv(images);
@@ -52,14 +70,17 @@ const AnalyzerPage = () => {
 
   return (
     <>
-      <Dialog
-        open={selectedImage !== null}
-        onClose={closeImageFullInfo}
-        fullWidth
-        maxWidth="xl"
-      >
-        {selectedImage && <ImageFullInfo image={selectedImage} />}
-      </Dialog>
+      {selectedImage && (
+        <Dialog open onClose={closeImageFullInfo} fullWidth maxWidth="xl">
+          <ImageFullInfo image={selectedImage} leaves={leaves} />
+        </Dialog>
+      )}
+
+      {selectedLeaf && (
+        <Dialog open onClose={closeLeafFullInfo} fullWidth maxWidth="xl">
+          <LeafFullInfo leaf={selectedLeaf} />
+        </Dialog>
+      )}
       <ClassifiersChapter
         selectedGenus={selectedGenus}
         classifiers={classifiers}
@@ -74,9 +95,11 @@ const AnalyzerPage = () => {
             <AnalyzerHeader
               imagesCount={imagesCount}
               settedGenus={selectedGenus !== undefined}
-              handleDownloadResult={handleDownloadResult}
               handleProcessImages={handleProcessImages}
-              // isFileMenuOpen={isFileMenuOpen}
+              researches={researchesQuery.data ?? []}
+              isResearchesLoading={researchesQuery.isLoading}
+              canAddToResearch={imagesCount.success > 0}
+              handleAddToResearch={handleAddToResearch}
             />
           ),
         }}
@@ -100,14 +123,15 @@ const AnalyzerPage = () => {
           onUpdate={updateImageStatus}
         />
       </PageChapter>
-      <PageChapter header={{ title: "Листья" }}>
+      <PageChapter
+        header={{
+          component: <LeavesHeader leavesCount={leaves.length} />,
+        }}
+      >
         <LeavesContainer
-          images={images}
-          leavesImage={leavesImage}
-          addLeaves={handleAddLeaves}
-          // onOpen={openImageFullInfo}
+          leaves={leaves}
+          onOpen={openLeafFullInfo}
           onDelete={handleDeleteLeaves}
-          // onUpdate={updateImageStatus}
         />
       </PageChapter>
     </>

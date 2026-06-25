@@ -6,7 +6,13 @@ import {
 } from "@/shared/types/image";
 import { useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { selectGenus, selectImages, updateImages } from "../analyzerSlice";
+import {
+  addImages as addImagesAction,
+  deleteImage as deleteImageAction,
+  selectGenus,
+  selectImages,
+  updateImages,
+} from "../analyzerSlice";
 
 export const useImageState = () => {
   const images = useSelector(selectImages);
@@ -17,7 +23,7 @@ export const useImageState = () => {
 
   const addImages = useCallback(
     (files: File[]) => {
-      if (!selectedGenus) return;
+      if (!selectedGenus || files.length === 0) return;
 
       const newImages: IImageData[] = files.map((file) => {
         const key = crypto.randomUUID();
@@ -28,23 +34,19 @@ export const useImageState = () => {
         return {
           id: key,
           key,
-
           name: file.name,
           size: file.size,
-
           src,
           previewUrl: src,
-
           status: ImageStatus.UPLOADED,
           predictions: [] as IPrediction[],
-
           classifier: undefined,
         };
       });
 
-      dispatch(updateImages([...images, ...newImages]));
+      dispatch(addImagesAction(newImages));
     },
-    [dispatch, images, selectedGenus],
+    [dispatch, selectedGenus],
   );
 
   const updateImageStatus = useCallback(
@@ -53,10 +55,7 @@ export const useImageState = () => {
         updateImages(
           images.map((prevImage) =>
             prevImage.key === image.key
-              ? {
-                  ...prevImage,
-                  status: newStatus,
-                }
+              ? { ...prevImage, status: newStatus }
               : prevImage,
           ),
         ),
@@ -73,11 +72,9 @@ export const useImageState = () => {
         URL.revokeObjectURL(image.src);
       }
 
-      dispatch(
-        updateImages(images.filter((prevImage) => prevImage.key !== image.key)),
-      );
+      dispatch(deleteImageAction(image.key));
     },
-    [images, dispatch],
+    [dispatch],
   );
 
   const replaceImages = useCallback(

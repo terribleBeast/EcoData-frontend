@@ -4,6 +4,7 @@ import { type IGenus } from "@/shared/types";
 import { ClassifierDropdown } from "./ClassifierDropdown";
 import { ChapterHeaderTemplate } from "@/shared/ui/ChapterHeader";
 import { useClassifiers } from "../hooks/useClassifiers";
+import { useMemo } from "react";
 
 type Props = {
   selectedGenus: IGenus | undefined;
@@ -22,6 +23,16 @@ export const ClassifiersChapter = ({
   availableSpeciesQuery,
   classifiers,
 }: Props) => {
+  const orderedClassifiers = useMemo(() => {
+    return [...classifiers].sort((a, b) => {
+      const first = a.latin_name ?? "";
+      const second = b.latin_name ?? "";
+
+      return first.localeCompare(second, ["ru", "en"], {
+        sensitivity: "base",
+      });
+    });
+  }, [classifiers]);
   return (
     <PageChapter
       header={{
@@ -57,49 +68,33 @@ export const ClassifiersChapter = ({
             Виды с доступными моделями
           </Typography>
 
-          <Stack
-            direction="row"
-            spacing={1.5}
-            sx={{ flexWrap: "wrap", gap: 1 }}
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "0.75rem",
+              width: "100%",
+              maxWidth: "800px",
+            }}
           >
-            {availableSpeciesQuery.isFetching && <CircularProgress size={24} />}
-
-            {!availableSpeciesQuery.isFetching &&
-              classifiers.map((item) => (
+            {selectedGenus !== undefined ? (
+              orderedClassifiers.map((item) => (
                 <Chip
-                  key={item.id}
-                  label={
-                    item.russian_name
-                      ? `${item.latin_name} (${item.russian_name})`
-                      : item.latin_name
-                  }
+                  key={item.id ?? item.species_id ?? item.latin_name}
+                  label={item.russian_name}
                   sx={{
                     height: 44,
                     px: 1,
-                    fontSize: "1.1rem",
+                    fontSize: "1.2rem",
                     borderRadius: 2,
                     bgcolor: "#EAF4E8",
                     color: "success.dark",
                     fontWeight: 500,
+                    maxWidth: "100%",
                   }}
                 />
-              ))}
-
-            {!availableSpeciesQuery.isFetching &&
-              selectedGenus &&
-              classifiers.length === 0 && (
-                <Typography
-                  sx={{
-                    padding: "1rem",
-                    color: "text.secondary",
-                    fontStyle: "italic",
-                  }}
-                >
-                  Для выбранного рода нет видов с доступными моделями
-                </Typography>
-              )}
-
-            {!selectedGenus && (
+              ))
+            ) : (
               <Typography
                 sx={{
                   padding: "1rem",
@@ -107,10 +102,11 @@ export const ClassifiersChapter = ({
                   fontStyle: "italic",
                 }}
               >
-                Чтобы увидеть доступные виды, выберите род растения
+                Чтобы увидеть доступные виды, для которых доступна
+                классификация, выберите род растения
               </Typography>
             )}
-          </Stack>
+          </Box>
         </Box>
       </Box>
     </PageChapter>

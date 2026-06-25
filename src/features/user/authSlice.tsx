@@ -52,6 +52,8 @@ export const authSlice = createSlice({
       userEndpoints.endpoints.getMe.matchFulfilled,
       (state, { payload }: PayloadAction<ResearcherProfileResponse>) => {
         state.me = payload;
+
+        console.log("me", payload);
         // Also populate researcher with the same data (it's the combined table)
         state.researcher = {
           entity_id: payload.researcher_id,

@@ -82,14 +82,22 @@ function updateImageByKey(
   patch: Partial<IImageData>,
 ): IImageData[] {
   return images.map((image) =>
-    image.key === key ? { ...image, ...patch } : image,
+    image.key === key
+      ? {
+          ...image,
+          ...patch,
+        }
+      : image,
   );
 }
 
 async function waitForSocketBuffer(ws: WebSocket): Promise<void> {
   const maxBufferedBytes = 32 * 1024 * 1024;
 
-  while (ws.bufferedAmount > maxBufferedBytes) {
+  while (
+    ws.readyState === WebSocket.OPEN &&
+    ws.bufferedAmount > maxBufferedBytes
+  ) {
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
 }
@@ -119,15 +127,15 @@ export function usePredictionWsSession(
       }
 
       return new Promise<IImageData[]>((resolve) => {
+        const sentKeysByOrder: string[] = [];
+        let receivedCount = 0;
+
         const url = buildAnalyzerWsUrl(genusId, token);
         const ws = new WebSocket(url);
 
         socketRef.current = ws;
         setIsProcessing(true);
         setProgress({ stage: "connecting" });
-
-        const sentKeysByServerIndex: string[] = [];
-        const imageIdToLocalKey = new Map<string, string>();
 
         let latestImages: IImageData[] = images.map((image) => ({
           ...image,
@@ -138,8 +146,8 @@ export function usePredictionWsSession(
 
         const finish = (fallbackStatus?: typeof ImageStatus.ERROR) => {
           if (finished) return;
-          finished = true;
 
+          finished = true;
           socketRef.current = null;
           setIsProcessing(false);
 
@@ -147,7 +155,10 @@ export function usePredictionWsSession(
             if (image.status !== ImageStatus.PROCESSING) return image;
 
             if (image.predictions && image.predictions.length > 0) {
-              return { ...image, status: ImageStatus.PROCESSED };
+              return {
+                ...image,
+                status: ImageStatus.PROCESSED,
+              };
             }
 
             return {
@@ -163,8 +174,18 @@ export function usePredictionWsSession(
           setProgress({ stage: "sending", progress: `0/${images.length}` });
 
           for (let i = 0; i < images.length; i += 1) {
+            if (ws.readyState !== WebSocket.OPEN) break;
+
             const image = images[i];
             const file = getFile(image.key);
+
+            console.log("WS SEND IMAGE", {
+              key: image.key,
+              name: image.name,
+              hasFile: Boolean(file),
+              size: file?.size,
+              type: file?.type,
+            });
 
             if (!file) {
               latestImages = updateImageByKey(latestImages, image.key, {
@@ -173,8 +194,14 @@ export function usePredictionWsSession(
               continue;
             }
 
-            const serverIndex = sentKeysByServerIndex.length;
-            sentKeysByServerIndex[serverIndex] = image.key;
+            sentKeysByOrder.push(image.key);
+
+            ws.send(
+              JSON.stringify({
+                type: "image_id",
+                id: image.key,
+              }),
+            );
 
             ws.send(file);
 
@@ -186,7 +213,9 @@ export function usePredictionWsSession(
             await waitForSocketBuffer(ws);
           }
 
-          ws.send(JSON.stringify({ type: "done" }));
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "done" }));
+          }
         };
 
         ws.onmessage = (event) => {
@@ -197,7 +226,7 @@ export function usePredictionWsSession(
           } catch {
             return;
           }
-
+          console.log("WS MESSAGE:", message);
           switch (message.type) {
             case "ready": {
               setProgress({
@@ -208,23 +237,24 @@ export function usePredictionWsSession(
             }
 
             case "received": {
-              const localKey = sentKeysByServerIndex[message.index];
+              const localKey = sentKeysByOrder[receivedCount];
+              receivedCount += 1;
 
-              if (localKey) {
-                imageIdToLocalKey.set(message.image_id, localKey);
+              if (!localKey) {
+                console.warn("Cannot map received image:", message);
+                break;
               }
+
+              latestImages = updateImageByKey(latestImages, localKey, {
+                status: ImageStatus.PROCESSING,
+              });
 
               break;
             }
-
             case "rejected": {
-              const localKey = sentKeysByServerIndex[message.index];
-
-              if (localKey) {
-                latestImages = updateImageByKey(latestImages, localKey, {
-                  status: ImageStatus.ERROR,
-                });
-              }
+              latestImages = updateImageByKey(latestImages, message.image_id, {
+                status: ImageStatus.ERROR,
+              });
 
               break;
             }
@@ -247,9 +277,13 @@ export function usePredictionWsSession(
             }
 
             case "results": {
-              for (const result of message.data) {
-                const localKey = imageIdToLocalKey.get(result.image_id);
-                if (!localKey) continue;
+              message.data.forEach((result, index) => {
+                const localKey = sentKeysByOrder[index];
+
+                if (!localKey) {
+                  console.warn("Cannot map WS result to local image:", result);
+                  return;
+                }
 
                 const predictions = probabilitiesToPredictions(
                   result.probabilities,
@@ -257,11 +291,12 @@ export function usePredictionWsSession(
 
                 latestImages = updateImageByKey(latestImages, localKey, {
                   predictions,
-                  status: predictions.length
-                    ? ImageStatus.PROCESSED
-                    : ImageStatus.ERROR,
+                  status:
+                    predictions.length > 0
+                      ? ImageStatus.PROCESSED
+                      : ImageStatus.ERROR,
                 });
-              }
+              });
 
               setProgress({
                 stage: "results",
@@ -270,7 +305,6 @@ export function usePredictionWsSession(
 
               break;
             }
-
             case "complete": {
               setProgress({
                 stage: "complete",

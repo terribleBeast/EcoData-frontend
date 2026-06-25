@@ -11,26 +11,27 @@ import {
   selectImages,
 } from "../analyzerSlice";
 import { useLeavesState } from "./useLeavesState";
-import { useAnalyzerFiles } from "./useAnalyzerFiles";
+import type { ILeafData } from "../components/LeavesContainer";
 
+type GenusLike = {
+  id?: string;
+  genus_id?: string;
+};
 export function useAnalyzerPage() {
-  const { handleAddLeaves, handleDeleteLeaves, leaves } = useLeavesState();
+  const dispatch = useDispatch();
+  const [selectedLeaf, setSelectedLeaf] = useState<ILeafData | null>(null);
+  const openLeafFullInfo = useCallback((leaf: ILeafData) => {
+    setSelectedLeaf(leaf);
+  }, []);
 
+  const closeLeafFullInfo = useCallback(() => {
+    setSelectedLeaf(null);
+  }, []);
+  const { leaves, addLeavesFromImages, handleDeleteLeaves } = useLeavesState();
   const [selectedImage, setSelectedImage] = useState<IImageData | null>(null);
+
   const selectedGenus = useSelector(selectGenus);
   const images = useSelector(selectImages);
-  const leavesImage = new Map();
-  const {
-    getImageFile,
-    addImages,
-    deleteImage,
-    updateImageStatus,
-    replaceImages,
-  } = useImageState();
-
-  // const handleSelectClassifier = useCallback((index: number) => {
-  //   setSelectedClassifier(classifiers[index].plant);
-  // }, []);
 
   const openImageFullInfo = useCallback((image: IImageData) => {
     setSelectedImage(image);
@@ -39,50 +40,18 @@ export function useAnalyzerPage() {
   const closeImageFullInfo = useCallback(() => {
     setSelectedImage(null);
   }, []);
-
-  // const handleProcessImages = useCallback(async () => {
-  //   if (selectedGenus?.id === undefined) return;
-
-  //   const toProcess = images.filter(
-  //     (img) => img.status === ImageStatus.UPLOADED,
-  //   );
-
-  //   if (toProcess.length === 0) return;
-
-  //   const toProcessKeys = new Set(toProcess.map((img) => img.key));
-
-  //   const markedProcessing = images.map((img) =>
-  //     toProcessKeys.has(img.key)
-  //       ? { ...img, status: ImageStatus.PROCESSING }
-  //       : img,
-  //   );
-
-  //   replaceImages(markedProcessing);
-
-  //   const processed = await processImagesWs(toProcess, selectedGenus.id);
-
-  //   const resultByKey = new Map(
-  //     processed.map((result) => [result.key, result]),
-  //   );
-
-  //   const merged = markedProcessing.map(
-  //     (img) => resultByKey.get(img.key) ?? img,
-  //   );
-
-  //   replaceImages(merged);
-  // }, [images, selectedGenus, replaceImages, processImagesWs]);
-
-  const dispatch = useDispatch();
-
-  // const images = useSelector(selectAnalyzerImages);
-  // const selectedGenus = useSelector(selectSelectedGenus);
-
-  const { addFiles, getFile, deleteFile } = useAnalyzerFiles();
+  const {
+    getImageFile,
+    addImages,
+    deleteImage,
+    updateImageStatus,
+    replaceImages,
+  } = useImageState();
 
   const { processImagesWs, closeSession, progress, isProcessing } =
-    usePredictionWsSession(getFile);
+    usePredictionWsSession(getImageFile);
 
-  const selectedGenusId = selectedGenus?.id;
+  const selectedGenusId = selectedGenus?.id ?? selectedGenus?.genus_id;
 
   const handleProcessImages = useCallback(async () => {
     if (!selectedGenusId) return;
@@ -98,19 +67,23 @@ export function useAnalyzerPage() {
     const processed = await processImagesWs(toProcess, selectedGenusId);
 
     dispatch(replaceProcessedImages(processed));
-  }, [dispatch, images, selectedGenusId, processImagesWs]);
+
+    addLeavesFromImages(processed);
+  }, [dispatch, images, selectedGenusId, processImagesWs, addLeavesFromImages]);
   return {
     selectedImage,
+    selectedLeaf,
     addImages,
     deleteImage,
     updateImageStatus,
     openImageFullInfo,
     closeImageFullInfo,
+    openLeafFullInfo,
+    closeLeafFullInfo,
     handleProcessImages,
+    leaves,
+    handleDeleteLeaves,
     progress,
     isProcessing,
-    handleAddLeaves,
-    handleDeleteLeaves,
-    leavesImage,
   };
 }

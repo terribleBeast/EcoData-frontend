@@ -1,5 +1,7 @@
 // ── Image types matching DB images table + /api/v1/images endpoints ──
 
+import { theme } from "@/app/theme";
+
 export const ImageStatus = {
   LOADING: "Загрузка",
   UPLOADED: "Загружен",
@@ -12,12 +14,12 @@ export const ImageStatus = {
 export type ImageStatusType = (typeof ImageStatus)[keyof typeof ImageStatus];
 
 export const STATUS_BORDER_COLORS: Record<ImageStatusType, string> = {
-  [ImageStatus.LOADING]: "#3C9DD0",
-  [ImageStatus.UPLOADED]: "yellow",
-  [ImageStatus.PROCESSING]: "blue",
-  [ImageStatus.PROCESSED]: "green",
-  [ImageStatus.ERROR]: "red",
-  [ImageStatus.UNKNOWN]: "gray",
+  [ImageStatus.LOADING]: "#4F93B5", // спокойный голубой
+  [ImageStatus.UPLOADED]: "#C7952B", // тёплая охра
+  [ImageStatus.PROCESSING]: "#4E6FAE", // мягкий синий
+  [ImageStatus.PROCESSED]: "#3F8A4F", // насыщенный природный зелёный
+  [ImageStatus.ERROR]: "#B85F47", // терракотово-красный
+  [ImageStatus.UNKNOWN]: "#7C867A", // серо-зелёный
 };
 
 /** Prediction result from neural model */

@@ -12,11 +12,13 @@ import {
   createSlice,
   type PayloadAction,
 } from "@reduxjs/toolkit";
+import type { ILeafData } from "./components/LeavesContainer";
 
 interface AnalyzerState {
   images: IImageData[];
   genus: IGenus | undefined;
   species: ISpecies[];
+  leaves: ILeafData[];
 }
 
 type UpdateImageStatusPayload = {
@@ -34,6 +36,7 @@ const initialState: AnalyzerState = {
   images: [],
   genus: undefined,
   species: [],
+  leaves: [],
 };
 
 export const analyzerSlice = createSlice({
@@ -182,16 +185,20 @@ export const selectImagesCount = createSelector([selectImages], (images) => {
       acc.all += 1;
 
       switch (image.status) {
+        case ImageStatus.UPLOADED:
+          acc.uploaded += 1;
+          break;
+
+        case ImageStatus.PROCESSING:
+          acc.processing += 1;
+          break;
+
         case ImageStatus.PROCESSED:
           acc.success += 1;
           break;
 
         case ImageStatus.ERROR:
           acc.error += 1;
-          break;
-
-        case ImageStatus.PROCESSING:
-          acc.processing += 1;
           break;
 
         default:
@@ -202,9 +209,10 @@ export const selectImagesCount = createSelector([selectImages], (images) => {
     },
     {
       all: 0,
+      uploaded: 0,
+      processing: 0,
       success: 0,
       error: 0,
-      processing: 0,
     },
   );
 });

@@ -5,18 +5,20 @@ import {
   ImageStatus,
   type IImageData,
   type ImageStatusType,
+  type IPrediction,
 } from "@/shared/types/image";
-import { getBestPrediction, getStatusBorderColor } from "../utils";
+import { getStatusBorderColor } from "../utils";
 
 interface ImageCardProps {
   image: IImageData;
+  prediction?: IPrediction;
   onDelete: (image: IImageData) => void;
   onOpen: (image: IImageData) => void;
   onUpdate: (image: IImageData, newStatus: ImageStatusType) => void;
 }
 
 export const ImageCard = memo(
-  ({ image, onDelete, onOpen, onUpdate }: ImageCardProps) => {
+  ({ image, prediction, onDelete, onOpen, onUpdate }: ImageCardProps) => {
     const initialized = useRef(false);
 
     useEffect(() => {
@@ -27,7 +29,6 @@ export const ImageCard = memo(
     }, [image, onUpdate]);
 
     const borderStyle = getStatusBorderColor(image.status);
-    const bestPrediction = getBestPrediction(image);
 
     return (
       <Paper
@@ -41,13 +42,7 @@ export const ImageCard = memo(
           justifyContent: "space-between",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
           <img
             src={image.src ?? "no-image-icon_1200.png"}
             alt="изображение"
@@ -66,9 +61,17 @@ export const ImageCard = memo(
           <Typography sx={{ overflowWrap: "break-word", fontWeight: "bold" }}>
             {image.name || "Не найдено"}
           </Typography>
-          <Typography>
-            {bestPrediction ? bestPrediction.classifier : "Нет предсказаний"}
-          </Typography>
+
+          {prediction && (
+            <>
+              <Typography sx={{ fontSize: "0.85rem" }}>
+                {prediction.classifier}
+              </Typography>
+              <Typography sx={{ fontSize: "0.85rem" }}>
+                {prediction.probability.toFixed(2)}%
+              </Typography>
+            </>
+          )}
         </Box>
 
         <Box sx={{ display: "flex", justifyContent: "end" }}>

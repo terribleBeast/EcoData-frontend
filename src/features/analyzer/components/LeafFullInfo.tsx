@@ -1,17 +1,17 @@
-import { Button, Typography, Box, Paper, Chip } from "@mui/material";
+import { Box, Button, Chip, Paper, Typography } from "@mui/material";
 import { DialogPanel } from "@/shared/components/DialogPanel";
-import { type IImageData } from "../../../shared/types/image";
 import { DialogSection } from "@/shared/ui/layout";
 import type { ILeafData } from "./LeavesContainer";
-import { InfoTable, PercentBar, StatusBadge } from "./InfoTable";
+import { InfoTable, PercentBar } from "./InfoTable";
 
-interface ImageFullInfoProps {
-  image: IImageData;
-  leaves: ILeafData[];
+interface LeafFullInfoProps {
+  leaf: ILeafData;
 }
 
-export const ImageFullInfo = ({ image, leaves }: ImageFullInfoProps) => {
-  const imageLeaves = leaves.filter((leaf) => leaf.image_key === image.key);
+export const LeafFullInfo = ({ leaf }: LeafFullInfoProps) => {
+  const sortedPredictions = [...leaf.predictions].sort(
+    (a, b) => b.probability - a.probability,
+  );
 
   return (
     <DialogPanel>
@@ -34,12 +34,12 @@ export const ImageFullInfo = ({ image, leaves }: ImageFullInfoProps) => {
             alignSelf: "center",
           })}
         >
-          Изображение
+          Лист
         </Typography>
 
         <img
-          src={image.src ?? "no-image-icon_1200.png"}
-          alt={image.name}
+          src={leaf.image.src ?? "no-image-icon_1200.png"}
+          alt={leaf.image.name}
           width="100%"
           style={{
             borderRadius: "12px",
@@ -60,7 +60,7 @@ export const ImageFullInfo = ({ image, leaves }: ImageFullInfoProps) => {
           </Button>
 
           <Button
-            href={image.src ?? ""}
+            href={leaf.image.src ?? ""}
             target="_blank"
             variant="contained"
             color="success"
@@ -79,41 +79,41 @@ export const ImageFullInfo = ({ image, leaves }: ImageFullInfoProps) => {
           title="Общая информация"
           rows={[
             {
-              label: "Имя файла",
-              value: image.name,
+              label: "Исходное изображение",
+              value: leaf.image.name,
             },
             {
-              label: "Статус",
-              value: <StatusBadge status={image.status} />,
-            },
-            {
-              label: "Количество листьев",
-              value: imageLeaves.length,
+              label: "Лучшее совпадение",
+              value: leaf.bestPrediction ? (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Chip
+                    size="small"
+                    color="success"
+                    label={leaf.bestPrediction.classifier}
+                  />
+                  <Typography sx={{ fontWeight: 600 }}>
+                    {leaf.bestPrediction.probability.toFixed(2)}%
+                  </Typography>
+                </Box>
+              ) : (
+                "Нет данных"
+              ),
             },
           ]}
         />
 
         <InfoTable
-          title="Листья изображения"
+          title="Вероятности классификации"
           rows={
-            imageLeaves.length > 0
-              ? imageLeaves.map((leaf, index) => ({
-                  label: `Лист ${index + 1}`,
-                  value: leaf.bestPrediction ? (
-                    <Box>
-                      <Typography sx={{ fontWeight: 600 }}>
-                        {leaf.bestPrediction.classifier}
-                      </Typography>
-                      <PercentBar value={leaf.bestPrediction.probability} />
-                    </Box>
-                  ) : (
-                    "Нет данных о классификации"
-                  ),
+            sortedPredictions.length > 0
+              ? sortedPredictions.map((prediction, index) => ({
+                  label: `${index + 1}. ${prediction.classifier}`,
+                  value: <PercentBar value={prediction.probability} />,
                 }))
               : [
                   {
-                    label: "Листья",
-                    value: "Для этого изображения листья пока не созданы",
+                    label: "Вероятности",
+                    value: "Нет данных о классификации",
                   },
                 ]
           }
@@ -123,4 +123,4 @@ export const ImageFullInfo = ({ image, leaves }: ImageFullInfoProps) => {
   );
 };
 
-export default ImageFullInfo;
+export default LeafFullInfo;

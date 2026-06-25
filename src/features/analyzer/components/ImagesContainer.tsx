@@ -50,7 +50,7 @@ export const ImagesContainer: React.FC<ImagesContainerProps> = ({
               onDelete={handleDeleteImage}
               onUpdate={handleUpdateImage}
               image={image}
-              key={index}
+              key={image.key}
             />
           ))}
         </>
