@@ -11,10 +11,12 @@ import { AnalyzerHeader } from "./AnalyzerHeader";
 import { useClassifiers } from "../hooks/useClassifiers";
 import { useSelector } from "react-redux";
 import { selectGenus, selectImages, selectImagesCount } from "../analyzerSlice";
+import { LeavesContainer } from "../components/LeavesContainer";
 
 const AnalyzerPage = () => {
   const classifiersState = useClassifiers();
   const images = useSelector(selectImages);
+
   const selectedGenus = useSelector(selectGenus);
   const imagesCount = useSelector(selectImagesCount);
 
@@ -26,10 +28,13 @@ const AnalyzerPage = () => {
     openImageFullInfo,
     closeImageFullInfo,
     handleProcessImages,
+    handleAddLeaves,
+    handleDeleteLeaves,
+    leavesImage,
   } = useAnalyzerPage();
   const handleDownloadResult = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    exportImagesToCsv(images);
+    // exportImagesToCsv(images);
   };
 
   return (
@@ -62,13 +67,27 @@ const AnalyzerPage = () => {
             />
           ),
         }}
+        sx={{
+          maxHeight: "600px",
+        }}
       >
         <ImagesContainer
           addImages={addImages}
           images={images}
+          settedGenus={selectedGenus !== undefined}
           onOpen={openImageFullInfo}
           onDelete={deleteImage}
           onUpdate={updateImageStatus}
+        />
+      </PageChapter>
+      <PageChapter header={{ title: "Листья" }}>
+        <LeavesContainer
+          images={images}
+          leavesImage={leavesImage}
+          addLeaves={handleAddLeaves}
+          // onOpen={openImageFullInfo}
+          onDelete={handleDeleteLeaves}
+          // onUpdate={updateImageStatus}
         />
       </PageChapter>
     </>

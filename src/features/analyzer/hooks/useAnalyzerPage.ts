@@ -4,12 +4,16 @@ import { ImageStatus } from "../../../shared/types/image";
 import { useImageState } from "./useImageState";
 import { useImagesProcessing } from "./useImagesProcessing";
 import { useSelector } from "react-redux";
-import { selectGenus, selectImages } from "../analyzerSlice";
+import { selectGenus, selectImages, selectLeavesImage } from "../analyzerSlice";
+import { useLeavesState } from "./useLeavesState";
 
 export function useAnalyzerPage() {
+  const { handleAddLeaves, handleDeleteLeaves, leaves } = useLeavesState();
+
   const [selectedImage, setSelectedImage] = useState<IImageData | null>(null);
   const selectedGenus = useSelector(selectGenus);
   const images = useSelector(selectImages);
+  const leavesImage = useSelector(selectLeavesImage);
   const { getFile, addImages, deleteImage, updateImageStatus, replaceImages } =
     useImageState();
 
@@ -71,5 +75,8 @@ export function useAnalyzerPage() {
     openImageFullInfo,
     closeImageFullInfo,
     handleProcessImages,
+    handleAddLeaves,
+    handleDeleteLeaves,
+    leavesImage,
   };
 }

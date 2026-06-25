@@ -13,7 +13,7 @@ export const apiConfig: FetchBaseQueryArgs = {
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootStateType).auth.token;
     if (token) {
-      headers.set("authorization", `Bearer ${token}`);
+      headers.set("Authorization", `Bearer ${token}`);
       return headers;
     }
   },

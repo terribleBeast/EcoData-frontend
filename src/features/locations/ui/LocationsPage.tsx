@@ -4,53 +4,29 @@ import { useNavigate } from "react-router";
 import { IconButton, Typography } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import type { MRT_ColumnDef } from "material-react-table";
-import type { IAddressDataFull } from "@/shared/types/location";
+import type { IAddressDataFull } from "../types";
 import { PageChapter } from "@/shared/ui/layout";
 
 interface AddressMeta {
   onEdit: (row: IAddressDataFull) => void;
-  onDelete: (address_id: number) => void;
+  onDelete: (address_id: string) => void;
 }
 
 const addressColumns: MRT_ColumnDef<IAddressDataFull>[] = [
   {
-    accessorKey: "country",
-    header: "Страна",
-    Cell: ({ row }) => (
-      <Typography sx={{ cursor: "pointer" }}>
-        {row.original.settlement?.district?.region?.country?.name ?? "—"}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: "region",
-    header: "Регион",
-    Cell: ({ row }) => (
-      <Typography>
-        {row.original.settlement?.district?.region?.name ?? "—"}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: "settlement",
+    accessorKey: "settlement_id",
     header: "Нас. пункт",
-    Cell: ({ row }) => (
-      <Typography>{row.original.settlement?.name ?? "—"}</Typography>
-    ),
+    Cell: ({ row }) => <Typography>{row.original.settlement_id}</Typography>,
   },
   {
-    accessorKey: "street",
+    accessorKey: "street_id",
     header: "Улица",
-    Cell: ({ row }) => (
-      <Typography>{row.original.street?.name ?? "—"}</Typography>
-    ),
+    Cell: ({ row }) => <Typography>{row.original.street_id}</Typography>,
   },
   {
-    accessorKey: "house",
+    accessorKey: "house_number_id",
     header: "Дом",
-    Cell: ({ row }) => (
-      <Typography>{row.original.house_number?.number ?? "—"}</Typography>
-    ),
+    Cell: ({ row }) => <Typography>{row.original.house_number_id}</Typography>,
   },
   {
     id: "actions",
@@ -108,7 +84,7 @@ const LocationsPage = () => {
         meta={{
           onEdit: (address: IAddressDataFull) =>
             navigate(`/locations/${address.id}/edit`),
-          onDelete: (address_id: number) => {
+          onDelete: (address_id: string) => {
             remove(address_id);
           },
         }}

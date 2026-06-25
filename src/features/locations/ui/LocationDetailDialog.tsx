@@ -5,7 +5,7 @@ import { useDetailDialog } from "../hooks/useDetailDialog";
 import { type DetailDialogModeType, getDialogType } from "@/shared/utils";
 import { useLocation, useParams } from "react-router";
 import { useAddressDetail } from "../hooks/useAddressDetail";
-import type { IAddressDataFull } from "@/shared/types/location";
+import type { IAddressDataFull } from "../types";
 
 const LocationDetailDialog = () => {
   const { handleCreateAddress, handleEditAddress, countries, mutationsState } =
@@ -15,7 +15,7 @@ const LocationDetailDialog = () => {
   const { id } = useParams<{ id: string }>();
 
   const dialogType: DetailDialogModeType = getDialogType(pathname);
-  const { addressQuery } = useAddressDetail(id ? Number(id) : -1);
+  const { addressQuery } = useAddressDetail(id ?? "-1");
 
   return (
     <GenericEntityDetailDialog<IAddressDataFull>

@@ -12,19 +12,15 @@ export const LabFullInfo = ({ lab }: { lab: ILabDataFull }) => {
       fields: [
         {
           name: "Название",
-          value: lab.organization_details?.name ?? "—",
+          value: lab.name ?? "—",
         },
         {
-          name: "Email",
-          value: lab.organization_details?.email ?? "—",
+          name: "Организация",
+          value: lab.organization?.name ?? "—",
         },
         {
-          name: "Телефон",
-          value: lab.organization_details?.phone ?? "—",
-        },
-        {
-          name: "Тип организации",
-          value: lab.organization_type?.name ?? "—",
+          name: "Адрес",
+          value: lab.address?.address_id ?? "—",
         },
       ],
     },

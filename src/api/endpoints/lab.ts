@@ -1,6 +1,8 @@
 import type {
   ILabDataFull,
   IOrganizationType,
+  LaboratoryCreate,
+  LaboratoryUpdate,
 } from "@/shared/types/lab";
 import { apiSlice } from "../apiSlice";
 
@@ -8,14 +10,12 @@ export const labEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getLabs: builder.query<ILabDataFull[], void>({
       query: () => "/laboratories",
-      transformResponse: (response: { data: ILabDataFull[] }) =>
-        response.data,
+      transformResponse: (response: { data: ILabDataFull[] }) => response.data,
       providesTags: [{ type: "Labs", id: "LIST" }],
     }),
-    getLabById: builder.query<ILabDataFull, number>({
+    getLabById: builder.query<ILabDataFull, string>({
       query: (id) => `/laboratories/${id}`,
-      transformResponse: (response: { data: ILabDataFull }) =>
-        response.data,
+      transformResponse: (response: { data: ILabDataFull }) => response.data,
       providesTags: (response, error, arg) => [{ type: "Labs", id: arg }],
     }),
     getOrganizationTypes: builder.query<IOrganizationType[], void>({
@@ -23,7 +23,7 @@ export const labEndpoints = apiSlice.injectEndpoints({
       transformResponse: (response: { data: IOrganizationType[] }) =>
         response.data,
     }),
-    createLab: builder.mutation<void, ILabDataFull>({
+    createLab: builder.mutation<void, LaboratoryCreate>({
       query: (lab) => ({
         url: "/laboratories",
         method: "POST",
@@ -31,15 +31,20 @@ export const labEndpoints = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Labs"],
     }),
-    editLab: builder.mutation<ILabDataFull, Partial<ILabDataFull>>({
-      query: (lab) => ({
-        url: `/laboratories/${lab.id}`,
+    editLab: builder.mutation<
+      ILabDataFull,
+      LaboratoryUpdate & { entity_id: string }
+    >({
+      query: ({ entity_id, ...lab }) => ({
+        url: `/laboratories/${entity_id}`,
         method: "PATCH",
         body: lab,
       }),
-      invalidatesTags: (lab) => [{ type: "Labs", id: lab?.id }],
+      invalidatesTags: (_result, _error, { entity_id }) => [
+        { type: "Labs", id: entity_id },
+      ],
     }),
-    deleteLab: builder.mutation<void, number>({
+    deleteLab: builder.mutation<void, string>({
       query: (id) => ({
         url: `/laboratories/${id}`,
         method: "DELETE",

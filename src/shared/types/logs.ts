@@ -1,16 +1,18 @@
-// log levels for logging python lib
+// ── Log levels matching Python logging (10=DEBUG … 50=CRITICAL) ──
+// POST /api/v1/logs
+
 export const LevelLog = {
-  INFO: 10,
-  DEBUG: 20,
-  ERROR: 30,
-  WARNING: 40,
+  DEBUG: 10,
+  INFO: 20,
+  WARNING: 30,
+  ERROR: 40,
   CRITICAL: 50,
 } as const;
 
 export type LevelLogType = (typeof LevelLog)[keyof typeof LevelLog];
 
 export interface ILog {
-  levelLog: LevelLogType;
+  level: LevelLogType; // API field name is "level", not "levelLog"
   message: string;
-  meta?: string;
+  meta?: string | null;
 }

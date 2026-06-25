@@ -2,9 +2,9 @@
 
 import { useEntityCRUD } from "@/shared/hooks/useEntityCRUD";
 import {
-  useCreateResearcherFullMutation,
+  useCreateResearcherMutation,
   useDeleteResearcherMutation,
-  useEditResearcherFullMutation,
+  useUpdateResearcherMutation,
   useLazyGetResearcherByIdQuery,
   useGetResearchersQuery,
 } from "@/api/endpoints";
@@ -13,8 +13,8 @@ export const useResearchersCrud = () => {
   const crud = useEntityCRUD(
     useGetResearchersQuery,
     useLazyGetResearcherByIdQuery,
-    useCreateResearcherFullMutation,
-    useEditResearcherFullMutation,
+    useCreateResearcherMutation,
+    useUpdateResearcherMutation,
     useDeleteResearcherMutation,
     undefined,
   );

@@ -1,6 +1,7 @@
 import type {
   IResearcherDataFull,
   IResearcherData,
+  ResearcherCreate,
 } from "@/shared/types/researcher";
 import { apiSlice } from "../apiSlice";
 
@@ -8,53 +9,42 @@ export const researcherEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getResearchers: builder.query<IResearcherDataFull[], void>({
       query: () => "/researchers",
-      transformResponse: (response: {
-        data: IResearcherDataFull[];
-      }): IResearcherDataFull[] => {
-        console.log(response.data);
-        return response.data;
-      },
       providesTags: [{ type: "Researchers", id: "LIST" }],
     }),
-    getResearcherById: builder.query<IResearcherDataFull, number>({
+    getResearcherById: builder.query<IResearcherDataFull, string>({
       query: (id) => `/researchers/${id}`,
-      transformResponse: (response: { data: IResearcherDataFull }) => {
-        console.log(response.data);
-        return response.data;
+      providesTags: (_result, _error, id) => [{ type: "Researchers", id }],
+    }),
+    getResearchersByIds: builder.query<IResearcherData[], IResearcherData[]>({
+      query: (items) => {
+        const req = `/researchers?${items.map((item) => `ids=${item.researcher_id}`).join("&")}`;
+        console.log(req);
+        return req;
       },
-      providesTags: (response, error, arg) => [
-        { type: "Researchers", id: arg },
-      ],
-    }),
-    getResearchersByIds: builder.query<IResearcherData[], number[]>({
-      query: (ids) => `/researchers?ids=${ids.join(",")}`,
-      transformResponse: (response: { data: IResearcherData[] }) =>
-        response.data,
     }),
 
-    editResearcherFull: builder.mutation<
-      IResearcherDataFull,
-      Partial<IResearcherDataFull>
-    >({
+    createResearcher: builder.mutation<string, ResearcherCreate>({
       query: (researcher) => ({
-        url: `/researchers/${researcher.id}`,
-        method: "PATCH",
-        body: researcher,
-      }),
-      invalidatesTags: (researcher) => [
-        { type: "Researchers", id: researcher?.id },
-      ],
-    }),
-
-    createResearcherFull: builder.mutation<void, IResearcherDataFull>({
-      query: (credentials) => ({
         url: "/researchers",
         method: "POST",
-        body: credentials,
+        body: researcher,
       }),
       invalidatesTags: ["Researchers"],
     }),
-    deleteResearcher: builder.mutation<void, number>({
+    updateResearcher: builder.mutation<
+      string,
+      Partial<ResearcherCreate> & { entity_id: string }
+    >({
+      query: ({ entity_id, ...patch }) => ({
+        url: `/researchers/${entity_id}`,
+        method: "PATCH",
+        body: patch,
+      }),
+      invalidatesTags: (_result, _error, { entity_id }) => [
+        { type: "Researchers", entity_id },
+      ],
+    }),
+    deleteResearcher: builder.mutation<void, string>({
       query: (id) => ({
         url: `/researchers/${id}`,
         method: "DELETE",
@@ -69,7 +59,7 @@ export const {
   useGetResearcherByIdQuery,
   useLazyGetResearcherByIdQuery,
   useGetResearchersByIdsQuery,
-  useCreateResearcherFullMutation,
-  useEditResearcherFullMutation,
+  useCreateResearcherMutation,
+  useUpdateResearcherMutation,
   useDeleteResearcherMutation,
 } = researcherEndpoints;

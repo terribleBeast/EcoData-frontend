@@ -25,6 +25,7 @@ export const useImageState = () => {
             src: file.type.startsWith("image/")
               ? URL.createObjectURL(file)
               : undefined,
+            file,
             name: file.name,
             key,
             predictions: undefined,
@@ -32,10 +33,10 @@ export const useImageState = () => {
             classifier: selectedGenus.id,
           };
         });
-        dispatch(updateImages(images.concat(newImages)));
+        dispatch(updateImages(newImages));
       }
     },
-    [dispatch, selectedGenus, images],
+    [dispatch, selectedGenus],
   );
 
   const updateImageStatus = useCallback(

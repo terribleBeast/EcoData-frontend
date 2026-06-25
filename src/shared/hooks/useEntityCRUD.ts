@@ -9,9 +9,6 @@ import { mutationState, queryState } from "./utils";
 /**
  * Captures the shape of an RTK Query mutation hook returned by
  * `apiSlice.useXxxMutation()` without depending on internal RTKQ types.
- *
- * `TArg`    — the argument the trigger function accepts
- * `TResult` — the result type (usually void for mutations)
  */
 type MutationHook<TArg, TResult = unknown> = () => readonly [
   (arg: TArg) => Promise<TResult>,
@@ -33,7 +30,6 @@ type QueryHook<TArg, TResult> = (arg: TArg) => {
   isLoading: boolean;
   isError: boolean;
   error?: FetchBaseQueryError | SerializedError | undefined;
-  // … other RTKQ fields are simply ignored
 };
 
 type LazyQueryHook<TArg, TResult> = () => [
@@ -43,7 +39,6 @@ type LazyQueryHook<TArg, TResult> = () => [
     isLoading: boolean;
     isError: boolean;
     error?: FetchBaseQueryError | SerializedError | undefined;
-    // … other RTKQ fields are simply ignored
   },
   unknown,
 ];
@@ -56,21 +51,23 @@ export interface CrudState {
   error?: FetchBaseQueryError | SerializedError | undefined;
 }
 
-/** Minimal contract any entity must satisfy to participate in CRUD */
+/** Any entity that represents a DB row must expose its PK via entity_id */
 export interface EntityWithId {
-  id: number;
+  entity_id: string;
 }
 
 /** Uniform CRUD API returned by the hook */
 export interface EntityCRUD<
   TEntity extends EntityWithId,
   TCreateArg = TEntity,
+  TUpdateArg = Partial<TEntity> & { entity_id: string },
 > {
   items: TEntity[];
-  get: (id: number) => void;
+  /** Lookup an entity by its entity_id */
+  get: (entity_id: string) => void;
   create: (arg: TCreateArg) => Promise<unknown>;
-  update: (arg: Partial<TEntity> & { id: number }) => Promise<unknown>;
-  remove: (id: number) => unknown;
+  update: (arg: TUpdateArg) => Promise<unknown>;
+  remove: (entity_id: string) => unknown;
 
   queriesState: {
     list: CrudState;
@@ -88,32 +85,36 @@ export interface EntityCRUD<
 /**
  * Generic CRUD hook for any RTK Query-backed entity.
  *
- * Pass the list-query hook, the three mutation hooks, and the query argument,
- * and get back a uniform `{ items, create, update, remove, state }` API.
- *
  * @example
  * ```ts
- * const { items, create, update, remove, state } = useEntityCRUD(
- *   useGetResearchersQuery,
- *   useCreateResearcherFullMutation,
- *   useEditResearcherFullMutation,
- *   useDeleteResearcherMutation,
+ * const crud = useEntityCRUD<ILabDataFull>(
+ *   useGetLabsQuery, useLazyGetLabByIdQuery,
+ *   useCreateLabMutation, useEditLabMutation, useDeleteLabMutation,
  *   undefined,
  * );
+ * // crud.items: ILabDataFull[] — each item has `id: string`
+ *
+ * const crud2 = useEntityCRUD<IResearcherDataFull>(
+ *   useGetResearchersQuery, useLazyGetResearcherByIdQuery,
+ *   useCreateResearcherMutation, useUpdateResearcherMutation,
+ *   useDeleteResearcherMutation, undefined,
+ * );
+ * // crud2.items: IResearcherDataFull[] — each item has `researcher_id: string`
  * ```
  */
 export function useEntityCRUD<
   TEntity extends EntityWithId,
   TQueryArg = void,
   TCreateArg = TEntity,
+  TUpdateArg = Partial<TEntity> & { entity_id: string },
 >(
   useListQuery: QueryHook<TQueryArg, TEntity[]>,
-  useLazyGetQuery: LazyQueryHook<number, TEntity>,
+  useLazyGetQuery: LazyQueryHook<string, TEntity>,
   useCreateMutation: MutationHook<TCreateArg>,
-  useUpdateMutation: MutationHook<Partial<TEntity> & { id: number }>,
-  useDeleteMutation: MutationHook<number>,
+  useUpdateMutation: MutationHook<TUpdateArg>,
+  useDeleteMutation: MutationHook<string>,
   listQueryArg: TQueryArg,
-): EntityCRUD<TEntity, TCreateArg> {
+): EntityCRUD<TEntity, TCreateArg, TUpdateArg> {
   const listResult = useListQuery(listQueryArg);
 
   const [get, getResult] = useLazyGetQuery();
@@ -123,7 +124,6 @@ export function useEntityCRUD<
 
   return {
     items: listResult.data ?? [],
-
     get,
     create,
     update,

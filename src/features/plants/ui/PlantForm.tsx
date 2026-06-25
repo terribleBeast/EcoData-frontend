@@ -20,10 +20,10 @@ interface IPlantFormProps extends IFormProps<IPlantDataFull> {
 }
 
 interface IPlantDescriptionFormFields {
-  genus_id: number;
-  species_id: number;
-  leaf_type_id: number;
-  life_form_id: number;
+  genus_id: string;
+  species_id: string;
+  leaf_blade_type_id: string;
+  plant_life_form_id: string;
   description: string;
 }
 
@@ -46,12 +46,14 @@ export const PlantForm = ({
   } = useForm<IPlantDataFull & IPlantDescriptionFormFields>({
     mode: "onBlur",
     reValidateMode: "onSubmit",
-    defaultValues: initialData ?? {
-      additional_info: "",
-    },
+    defaultValues: initialData
+      ? { ...initialData, description: initialData.description ?? "" }
+      : {
+          description: "",
+        },
   });
-  const [selectedGenusId, setSelectedGenusId] = useState<number | null>(null);
-  const { data: species = [] } = useGetSpeciesQuery(selectedGenusId ?? 0, {
+  const [selectedGenusId, setSelectedGenusId] = useState<string | null>(null);
+  const { data: species = [] } = useGetSpeciesQuery(selectedGenusId ?? "", {
     skip: selectedGenusId === null,
   });
 
@@ -69,7 +71,11 @@ export const PlantForm = ({
         submitLabel={submitLabel}
         submitLoadingLabel={submitLoadingLabel}
         endpointState={endpointState}
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(
+          onSubmit as (
+            data: IPlantDataFull & IPlantDescriptionFormFields,
+          ) => void,
+        )}
       >
         <Controller
           control={control}
@@ -83,12 +89,12 @@ export const PlantForm = ({
                 label="Род"
                 onChange={(e) => {
                   field.onChange(e);
-                  setSelectedGenusId(Number(e.target.value));
+                  setSelectedGenusId(e.target.value);
                 }}
               >
                 {genera.map((g) => (
                   <MenuItem key={g.id} value={g.id}>
-                    {g.name}
+                    {g.latin_name}
                   </MenuItem>
                 ))}
               </Select>
@@ -106,7 +112,7 @@ export const PlantForm = ({
               <Select {...field} label="Вид">
                 {species.map((s) => (
                   <MenuItem key={s.id} value={s.id}>
-                    {s.name}
+                    {s.latin_name}
                   </MenuItem>
                 ))}
               </Select>
@@ -116,7 +122,7 @@ export const PlantForm = ({
 
         <Controller
           control={control}
-          name="leaf_type_id"
+          name="leaf_blade_type_id"
           rules={{ required: "Тип листа обязателен" }}
           render={({ field, fieldState: { error } }) => (
             <FormControl fullWidth error={!!error}>
@@ -134,7 +140,7 @@ export const PlantForm = ({
 
         <Controller
           control={control}
-          name="life_form_id"
+          name="plant_life_form_id"
           rules={{ required: "Жизненная форма обязательна" }}
           render={({ field, fieldState: { error } }) => (
             <FormControl fullWidth error={!!error}>
@@ -153,12 +159,6 @@ export const PlantForm = ({
         <FormTextField<IPlantDataFull & IPlantDescriptionFormFields>
           {...commonFormProps}
           name="description"
-          label="Описание"
-        />
-
-        <FormTextField<IPlantDataFull & IPlantDescriptionFormFields>
-          {...commonFormProps}
-          name="additional_info"
           label="Дополнительная информация"
         />
       </EntityForm>

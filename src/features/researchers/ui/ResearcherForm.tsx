@@ -1,23 +1,15 @@
-import type { IResearcherDataFull } from "@/shared/types/researcher";
+import type { ResearcherCreate } from "@/shared/types/researcher";
 import { useForm } from "react-hook-form";
-import {
-  EmailField,
-  FormTextField,
-  ResearchMultiSelect,
-} from "@/shared/components/formFields";
+import { FormTextField } from "@/shared/components/formFields";
 import FormPage from "@/shared/components/FormPage";
 import { PhoneNumberField } from "@/shared/components/formFields/PhoneNumberField";
-import { RoleField } from "@/shared/components/formFields/RoleField";
 import type { ICommonFieldProps, IFormProps } from "@/shared/types/form";
-import type { IResearchData } from "@/shared/types/research";
 import { EntityForm } from "@/shared/ui/EntityForm";
 
-interface IResearcherFormProps extends IFormProps<IResearcherDataFull> {
+interface IResearcherFormProps extends IFormProps<ResearcherCreate> {
   title: string;
   submitLabel: string;
   submitLoadingLabel: string;
-  researches: IResearchData[];
-  initialData?: IResearcherDataFull;
 }
 
 export const ResearcherForm = ({
@@ -27,22 +19,21 @@ export const ResearcherForm = ({
   title,
   onSubmit,
   endpointState,
-  researches,
 }: IResearcherFormProps) => {
   const {
     register,
     control,
     handleSubmit,
     formState: { errors: formErrors },
-  } = useForm<IResearcherDataFull>({
+  } = useForm<ResearcherCreate>({
     mode: "onBlur",
     reValidateMode: "onSubmit",
     defaultValues: initialData ?? {
-      role: "user",
-      researches_id: [],
+      first_name: "",
+      last_name: "",
     },
   });
-  const commonFieldProps: ICommonFieldProps<IResearcherDataFull> = {
+  const commonFieldProps: ICommonFieldProps<ResearcherCreate> = {
     isLoading: endpointState.isLoading,
     errors: formErrors,
     register: register,
@@ -57,50 +48,48 @@ export const ResearcherForm = ({
         endpointState={endpointState}
         onSubmit={handleSubmit(onSubmit)}
       >
-        <FormTextField<IResearcherDataFull>
+        <FormTextField<ResearcherCreate>
           {...commonFieldProps}
-          name="surname"
+          name="last_name"
           label="Фамилия"
           autoComplete="family-name"
           rules={{ required: "Фамилия обязательна" }}
         />
 
-        <FormTextField<IResearcherDataFull>
+        <FormTextField<ResearcherCreate>
           {...commonFieldProps}
-          name="name"
+          name="first_name"
           label="Имя"
           autoComplete="given-name"
           rules={{ required: "Имя обязательно" }}
         />
 
-        <FormTextField<IResearcherDataFull>
+        <FormTextField<ResearcherCreate>
           {...commonFieldProps}
           name="patronymic"
           label="Отчество"
           autoComplete="additional-name"
-          rules={{ required: "Отчество обязательно" }}
         />
 
-        <FormTextField<IResearcherDataFull>
+        <FormTextField<ResearcherCreate>
           {...commonFieldProps}
-          name="job"
+          name="job_id"
           label="Работа"
         />
 
-        <PhoneNumberField<IResearcherDataFull>
-          name="phoneNumber"
-          control={control}
+        <PhoneNumberField<ResearcherCreate> name="phone" control={control} />
+
+        <FormTextField<ResearcherCreate>
+          {...commonFieldProps}
+          name="organization_id"
+          label="Организация"
         />
 
-        <RoleField<IResearcherDataFull> name="role" control={control} />
-        <ResearchMultiSelect<IResearcherDataFull>
-          name="researches_id"
-          control={control}
-          researches={researches}
-          isLoading={endpointState.isLoading}
+        <FormTextField<ResearcherCreate>
+          {...commonFieldProps}
+          name="orcid_link"
+          label="ORCID"
         />
-
-        <EmailField<IResearcherDataFull> {...commonFieldProps} name="email" />
       </EntityForm>
     </FormPage>
   );

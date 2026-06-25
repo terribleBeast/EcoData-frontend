@@ -12,7 +12,7 @@ export const useClassifiers = () => {
 
   const handleSelectGenera = async (genus: IGenus) => {
     dispatch(setGenus(genus));
-    await classifiersQuery(genus.id).unwrap();
+    await classifiersQuery(genus.genus_id).unwrap();
   };
   return {
     generaQuery,

@@ -34,12 +34,12 @@ export const ResearcherMultiSelect = <T extends FieldValues>({
   });
 
   const selectedIds = useMemo(
-    () => new Set(Array.isArray(value) ? (value as number[]) : []),
+    () => new Set(Array.isArray(value) ? (value as string[]) : []),
     [value],
   );
 
   const selected = useMemo(
-    () => researchers.filter((r) => selectedIds.has(r.id)),
+    () => researchers.filter((r) => selectedIds.has(r.researcher_id)),
     [researchers, selectedIds],
   );
 
@@ -48,14 +48,16 @@ export const ResearcherMultiSelect = <T extends FieldValues>({
       multiple
       options={researchers}
       getOptionLabel={(option) =>
-        `${option.surname} ${option.name[0]}. ${option.patronymic[0]}.`
+        `${option.last_name} ${option.first_name[0]}.`
       }
-      getOptionKey={(option) => option.id}
+      getOptionKey={(option) => option.researcher_id}
       value={selected}
       loading={isLoading}
       disabled={disabled}
-      isOptionEqualToValue={(option, val) => option.id === val.id}
-      onChange={(_, newValue) => onChange(newValue.map((r) => r.id))}
+      isOptionEqualToValue={(option, val) =>
+        option.researcher_id === val.researcher_id
+      }
+      onChange={(_, newValue) => onChange(newValue.map((r) => r.researcher_id))}
       renderInput={(params) => (
         <TextField
           {...params}

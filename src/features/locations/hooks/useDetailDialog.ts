@@ -1,6 +1,6 @@
 import { useGetCountriesQuery } from "@/api/endpoints";
 import { useSuccessNavigation } from "@/shared/hooks/useFormCallback";
-import type { IAddressDataFull } from "@/shared/types/location";
+import type { IAddressDataFull } from "../types";
 import { useNavigate } from "react-router";
 import { useLocationsCrud } from "./useLocationsState";
 

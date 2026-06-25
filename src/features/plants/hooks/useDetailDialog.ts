@@ -4,7 +4,7 @@ import {
   useGetLifeFormsQuery,
 } from "@/api/endpoints";
 import { useSuccessNavigation } from "@/shared/hooks/useFormCallback";
-import type { IPlantDataFull } from "@/shared/types/plant";
+import type { IPlantDataFull, PlantCreate } from "@/shared/types/plant";
 import { useNavigate } from "react-router";
 import { usePlantsCrud } from "./usePlantsState";
 
@@ -21,7 +21,10 @@ export const useDetailDialog = () => {
 
   const handleCreatePlant = async (data: IPlantDataFull) => {
     try {
-      await create(data);
+      const payload: PlantCreate = {
+        description: data.description,
+      };
+      await create(payload);
       onSuccess();
     } catch {
       // FormTemplate shows the error via endpointState.isError
@@ -29,7 +32,10 @@ export const useDetailDialog = () => {
   };
   const handleEditPlant = async (data: IPlantDataFull) => {
     try {
-      await update(data);
+      const payload: PlantCreate = {
+        description: data.description,
+      };
+      await update({ ...payload, entity_id: data.entity_id });
       onSuccess();
     } catch {
       // FormTemplate shows the error via endpointState.isError

@@ -1,4 +1,11 @@
-import { Box, Button, Paper, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Paper,
+  Typography,
+  type SxProps,
+  type Theme,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 type PageChapterProps = {
@@ -6,9 +13,14 @@ type PageChapterProps = {
     | { title: string; onCreate?: () => void }
     | { component: React.ReactNode };
   children: React.ReactNode;
+  sx?: SxProps<Theme>;
 };
 
-export const PageChapter = ({ header, children }: PageChapterProps) => (
+export const PageChapter = ({
+  header,
+  children,
+  sx: customSx,
+}: PageChapterProps) => (
   <Paper
     elevation={3}
     sx={(theme) => ({
@@ -20,6 +32,7 @@ export const PageChapter = ({ header, children }: PageChapterProps) => (
       marginBottom: "2rem",
       minHeight: "max-content",
       minWidth: "max-content",
+      customSx,
     })}
   >
     {"component" in header ? (

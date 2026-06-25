@@ -8,20 +8,14 @@ import { useResearcherDetail } from "../hooks/useResearcherDetail";
 import type { IResearcherDataFull } from "@/shared/types/researcher";
 
 const ResearcherDetailDialog = () => {
-  const {
-    handleCreateResearcher,
-    handleEditResearcher,
-    researches,
-    mutationsState,
-  } = useDetailDialog();
-
   const { pathname } = useLocation();
   const { id } = useParams<{ id: string }>();
 
+  const { handleCreateResearcher, handleEditResearcher, mutationsState } =
+    useDetailDialog(id);
+
   const dialogType: DetailDialogModeType = getDialogType(pathname);
-  const { researcherQuery, researchesQuery } = useResearcherDetail(
-    id ? Number(id) : -1,
-  );
+  const { researcherQuery, researchesQuery } = useResearcherDetail(id ?? "");
 
   return (
     <GenericEntityDetailDialog<IResearcherDataFull>
@@ -45,7 +39,6 @@ const ResearcherDetailDialog = () => {
             ...mutationsState.create,
             successMsg: "Пользователь создан",
           }}
-          researches={researches}
           title={"Создание пользователя"}
           submitLabel={"Создать"}
           submitLoadingLabel={"Создание..."}
@@ -54,7 +47,6 @@ const ResearcherDetailDialog = () => {
       renderEdit={(data) => (
         <ResearcherForm
           onSubmit={handleEditResearcher}
-          researches={researches}
           endpointState={{
             ...mutationsState.update,
             successMsg: "Данные изменины",

@@ -59,7 +59,7 @@ export const ClassifiersChapter = ({
               classifiers.map((item) => (
                 <Chip
                   key={item.id}
-                  label={item.name}
+                  label={item.latin_name}
                   sx={{
                     height: 44,
                     px: 1,

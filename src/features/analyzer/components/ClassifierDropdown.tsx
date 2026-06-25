@@ -19,7 +19,7 @@ export const ClassifierDropdown = ({
       onChange={(_, value) => {
         if (value) onSelect(value);
       }}
-      getOptionLabel={(option) => option.name}
+      getOptionLabel={(option) => option.latin_name}
       isOptionEqualToValue={(o, v) => o.id === v.id}
       renderInput={(params) => <TextField {...params} fullWidth />}
       noOptionsText="Нет доступных вариантов"

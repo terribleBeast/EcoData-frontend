@@ -1,12 +1,16 @@
 import type {
-  IAddressDataFull,
-  ICountry,
-  IRegion,
-  IDistrict,
-  ISettlement,
+  IAddressData,
+  CountryResponse,
+  RegionResponse,
+  DistrictResponse,
+  SettlementResponse,
   IStreet,
   ISettlementType,
 } from "@/shared/types/location";
+
+// ── Local type alias for address responses ──
+// API returns flat IAddressData; this alias documents the read shape.
+type IAddressDataFull = IAddressData;
 import { apiSlice } from "../apiSlice";
 
 export const locationEndpoints = apiSlice.injectEndpoints({
@@ -18,38 +22,35 @@ export const locationEndpoints = apiSlice.injectEndpoints({
         response.data,
       providesTags: [{ type: "Locations", id: "LIST" }],
     }),
-    getAddressById: builder.query<IAddressDataFull, number>({
+    getAddressById: builder.query<IAddressDataFull, string>({
       query: (id) => `/locations/${id}`,
       transformResponse: (response: { data: IAddressDataFull }) =>
         response.data,
-      providesTags: (response, error, arg) => [
-        { type: "Locations", id: arg },
-      ],
+      providesTags: (response, error, arg) => [{ type: "Locations", id: arg }],
     }),
 
     // Lookup dictionaries
-    getCountries: builder.query<ICountry[], void>({
+    getCountries: builder.query<CountryResponse[], void>({
       query: () => "/locations/countries",
-      transformResponse: (response: { data: ICountry[] }) => response.data,
-    }),
-    getRegions: builder.query<IRegion[], number>({
-      query: (countryId) =>
-        `/locations/regions?country_id=${countryId}`,
-      transformResponse: (response: { data: IRegion[] }) => response.data,
-    }),
-    getDistricts: builder.query<IDistrict[], number>({
-      query: (regionId) =>
-        `/locations/districts?region_id=${regionId}`,
-      transformResponse: (response: { data: IDistrict[] }) =>
+      transformResponse: (response: { data: CountryResponse[] }) =>
         response.data,
     }),
-    getSettlements: builder.query<ISettlement[], number>({
-      query: (districtId) =>
-        `/locations/settlements?district_id=${districtId}`,
-      transformResponse: (response: { data: ISettlement[] }) =>
+    getRegions: builder.query<RegionResponse[], string>({
+      query: (countryId) => `/locations/regions?country_id=${countryId}`,
+      transformResponse: (response: { data: RegionResponse[] }) =>
         response.data,
     }),
-    getStreets: builder.query<IStreet[], number>({
+    getDistricts: builder.query<DistrictResponse[], string>({
+      query: (regionId) => `/locations/districts?region_id=${regionId}`,
+      transformResponse: (response: { data: DistrictResponse[] }) =>
+        response.data,
+    }),
+    getSettlements: builder.query<SettlementResponse[], string>({
+      query: (districtId) => `/locations/settlements?district_id=${districtId}`,
+      transformResponse: (response: { data: SettlementResponse[] }) =>
+        response.data,
+    }),
+    getStreets: builder.query<IStreet[], string>({
       query: (settlementId) =>
         `/locations/streets?settlement_id=${settlementId}`,
       transformResponse: (response: { data: IStreet[] }) => response.data,
@@ -69,20 +70,15 @@ export const locationEndpoints = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Locations"],
     }),
-    editAddress: builder.mutation<
-      IAddressDataFull,
-      Partial<IAddressDataFull>
-    >({
+    editAddress: builder.mutation<IAddressDataFull, Partial<IAddressDataFull>>({
       query: (address) => ({
         url: `/locations/${address.id}`,
         method: "PATCH",
         body: address,
       }),
-      invalidatesTags: (address) => [
-        { type: "Locations", id: address?.id },
-      ],
+      invalidatesTags: (address) => [{ type: "Locations", id: address?.id }],
     }),
-    deleteAddress: builder.mutation<void, number>({
+    deleteAddress: builder.mutation<void, string>({
       query: (id) => ({
         url: `/locations/${id}`,
         method: "DELETE",

@@ -8,14 +8,13 @@ import { useLabDetail } from "../hooks/useLabDetail";
 import type { ILabDataFull } from "@/shared/types/lab";
 
 const LabDetailDialog = () => {
-  const { handleCreateLab, handleEditLab, organizationTypes, mutationsState } =
-    useDetailDialog();
+  const { handleCreateLab, handleEditLab, mutationsState } = useDetailDialog();
 
   const { pathname } = useLocation();
   const { id } = useParams<{ id: string }>();
 
   const dialogType: DetailDialogModeType = getDialogType(pathname);
-  const { labQuery } = useLabDetail(id ? Number(id) : -1);
+  const { labQuery } = useLabDetail(id ?? "");
 
   return (
     <GenericEntityDetailDialog<ILabDataFull>
@@ -35,7 +34,6 @@ const LabDetailDialog = () => {
             ...mutationsState.create,
             successMsg: "Лаборатория создана",
           }}
-          organizationTypes={organizationTypes}
           title="Создание лаборатории"
           submitLabel="Создать"
           submitLoadingLabel="Создание..."
@@ -44,7 +42,6 @@ const LabDetailDialog = () => {
       renderEdit={(detail) => (
         <LabForm
           onSubmit={handleEditLab}
-          organizationTypes={organizationTypes}
           endpointState={{
             ...mutationsState.update,
             successMsg: "Данные изменены",

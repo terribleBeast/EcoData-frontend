@@ -7,7 +7,7 @@ import {
   FormTextField,
 } from "@/shared/components/formFields";
 import { AuthFormTemplate } from "@/features/auth/components/AuthFormTemplate";
-import type { ICreateUser } from "@/shared/types/user";
+import type { RegisterRequest } from "@/shared/types/user";
 import type { IAuthFormProps } from "../types";
 import type { ICommonFieldProps } from "@/shared/types/form";
 
@@ -16,7 +16,7 @@ const RegisterForm = ({
   onSubmit,
   isLogInForm,
   onSwitchForm,
-}: IAuthFormProps<ICreateUser>) => {
+}: IAuthFormProps<RegisterRequest>) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleShowPassword = () => setShowPassword((prev) => !prev);
@@ -25,12 +25,12 @@ const RegisterForm = ({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ICreateUser>({
+  } = useForm<RegisterRequest>({
     mode: "onBlur",
     reValidateMode: "onSubmit",
   });
 
-  const commonFieldProps: ICommonFieldProps<ICreateUser> = {
+  const commonFieldProps: ICommonFieldProps<RegisterRequest> = {
     isLoading: endpointState.isLoading,
     errors: errors,
     register: register,
@@ -45,37 +45,36 @@ const RegisterForm = ({
       onSwitchForm={onSwitchForm}
       onSubmit={handleSubmit(onSubmit)}
     >
-      <FormTextField<ICreateUser>
+      <FormTextField<RegisterRequest>
         {...commonFieldProps}
-        name="surname"
+        name="last_name"
         label="Фамилия"
         autoComplete="family-name"
         rules={{ required: "Фамилия обязательна" }}
       />
 
-      <FormTextField<ICreateUser>
+      <FormTextField<RegisterRequest>
         {...commonFieldProps}
-        name="name"
+        name="first_name"
         label="Имя"
         autoComplete="given-name"
         rules={{ required: "Имя обязательно" }}
       />
 
-      <FormTextField<ICreateUser>
+      <FormTextField<RegisterRequest>
         {...commonFieldProps}
         name="patronymic"
         label="Отчество"
         autoComplete="additional-name"
-        rules={{ required: "Отчество обязательно" }}
       />
 
-      <EmailField<ICreateUser> {...commonFieldProps} name="email" />
+      <EmailField<RegisterRequest> {...commonFieldProps} name="email" />
 
-      <PasswordField<ICreateUser>
+      <PasswordField<RegisterRequest>
         isLoading={endpointState.isLoading}
         errors={errors}
         register={register}
-        name="password_hash"
+        name="password"
         showPassword={showPassword}
         onClickEye={handleShowPassword}
       />

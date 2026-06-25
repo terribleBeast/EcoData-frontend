@@ -9,51 +9,15 @@ import { PageChapter } from "@/shared/ui/layout";
 
 interface PlantMeta {
   onEdit: (row: IPlantDataFull) => void;
-  onDelete: (plant_id: number) => void;
+  onDelete: (plant_id: string) => void;
 }
 
 const plantColumns: MRT_ColumnDef<IPlantDataFull>[] = [
   {
-    accessorKey: "genus",
-    header: "Род",
+    accessorKey: "description",
+    header: "Описание",
     Cell: ({ row }) => (
-      <Typography sx={{ cursor: "pointer" }}>
-        {row.original.plant_description?.genus?.name ?? "—"}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: "species",
-    header: "Вид",
-    Cell: ({ row }) => (
-      <Typography>
-        {row.original.plant_description?.species?.name ?? "—"}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: "leaf_type",
-    header: "Тип листа",
-    Cell: ({ row }) => (
-      <Typography>
-        {row.original.plant_description?.leaf_type?.name ?? "—"}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: "life_form",
-    header: "Жизненная форма",
-    Cell: ({ row }) => (
-      <Typography>
-        {row.original.plant_description?.life_form?.name ?? "—"}
-      </Typography>
-    ),
-  },
-  {
-    accessorKey: "additional_info",
-    header: "Доп. информация",
-    Cell: ({ row }) => (
-      <Typography>{row.original.additional_info || "—"}</Typography>
+      <Typography>{row.original.description || "—"}</Typography>
     ),
   },
   {
@@ -82,7 +46,7 @@ const plantColumns: MRT_ColumnDef<IPlantDataFull>[] = [
             aria-label="Удалить"
             onClick={(e) => {
               e.stopPropagation();
-              meta?.onDelete(row.original.id);
+              meta?.onDelete(row.original.plant_id);
             }}
           >
             <Delete color="error" />
@@ -108,11 +72,11 @@ const PlantsPage = () => {
         columns={plantColumns}
         data={plants}
         isLoading={queriesState.list.isLoading}
-        onRowClick={(row) => navigate(`/plants/${row.id}`)}
+        onRowClick={(row) => navigate(`/plants/${row.plant_id}`)}
         meta={{
           onEdit: (plant: IPlantDataFull) =>
-            navigate(`/plants/${plant.id}/edit`),
-          onDelete: (plant_id: number) => {
+            navigate(`/plants/${plant.plant_id}/edit`),
+          onDelete: (plant_id: string) => {
             remove(plant_id);
           },
         }}

@@ -6,7 +6,6 @@ import {
   type Path,
 } from "react-hook-form";
 import type { IResearchData } from "@/shared/types/research";
-import { useMemo } from "react";
 
 interface IResearchMultiSelectProps<T extends FieldValues> {
   name: Path<T>;
@@ -33,28 +32,26 @@ export const ResearchMultiSelect = <T extends FieldValues>({
     control,
   });
 
-  const selectedIds = useMemo(
-    () => new Set(Array.isArray(value) ? (value as number[]) : []),
-    [value],
+  const selectedIds = new Set<string>(
+    Array.isArray(value) ? (value as string[]) : [],
   );
 
-  const selected = useMemo(
-    () => researches.filter((r) => selectedIds.has(r.id)),
-    [researches, selectedIds],
-  );
+  const selected = researches.filter((r) => selectedIds.has(r.research_id));
 
   return (
-    <Autocomplete
+    <Autocomplete<IResearchData, true>
       multiple
       options={researches}
       getOptionLabel={(option) => option.title}
-      getOptionKey={(option) => option.id}
-      getOptionDisabled={(option) => selectedIds.has(option.id)}
+      getOptionKey={(option) => option.research_id}
+      getOptionDisabled={(option) => selectedIds.has(option.research_id)}
       value={selected}
       loading={isLoading}
       disabled={disabled}
-      isOptionEqualToValue={(option, val) => option.id === val.id}
-      onChange={(_, newValue) => onChange(newValue.map((r) => r.id))}
+      isOptionEqualToValue={(option, val) =>
+        option.research_id === val.research_id
+      }
+      onChange={(_, newValue) => onChange(newValue.map((r) => r.research_id))}
       renderInput={(params) => (
         <TextField
           {...params}

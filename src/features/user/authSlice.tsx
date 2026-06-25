@@ -1,64 +1,90 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootStateType } from "@/app/store";
-import type { IAuthUser } from "@/shared/types/user";
+import type {
+  TokenResponse,
+  ResearcherProfileResponse,
+} from "@/shared/types/user";
+import type { IResearcherDataFull } from "@/shared/types/researcher";
 import { userEndpoints } from "@/api/endpoints";
+import { researcherEndpoints } from "@/api/endpoints";
 
 interface AuthState {
-  user: IAuthUser | null;
+  me: ResearcherProfileResponse | null;
   token: string | null;
+  researcher: IResearcherDataFull | null;
 }
 
 const initialState: AuthState = {
-  // user: {
-  //   id: 1,
-  //   email: "kovalenko@gmail.com",
-  //   name: "Иван",
-  //   surname: "Иванов",
-  //   patronymic: "Иванович",
-  //   token: "1234",
-  // },
-  // token: "1234",
-  user: null,
+  me: null,
   token: localStorage.getItem("userToken"),
+  researcher: null,
 };
+
 export const authSlice = createSlice({
   name: "auth",
   initialState,
 
   reducers: {
     userLoggedOut(state) {
-      state.user = null;
+      state.me = null;
       state.token = null;
+      state.researcher = null;
       localStorage.removeItem("userToken");
     },
-    setCredentials: (state, { payload }: { payload: IAuthUser }) => {
-      state.user = payload;
+    setMe: (state, { payload }: PayloadAction<ResearcherProfileResponse>) => {
+      state.me = payload;
+    },
+    setResearcher: (state, { payload }: PayloadAction<IResearcherDataFull>) => {
+      state.researcher = payload;
     },
   },
   extraReducers: (builder) => {
+    // Login fulfilled → store token
     builder.addMatcher(
       userEndpoints.endpoints.login.matchFulfilled,
-      (state, { payload }: PayloadAction<IAuthUser>) => {
-        console.log(payload);
-        state.user = payload;
-        state.token = payload.token;
-        localStorage.setItem("userToken", payload.token ?? "");
+      (state, { payload }: PayloadAction<TokenResponse>) => {
+        state.token = payload.access_token;
+        localStorage.setItem("userToken", payload.access_token);
       },
     );
+    // getMe fulfilled → store current researcher profile
     builder.addMatcher(
-      userEndpoints.endpoints.createResearcher.matchFulfilled,
-      (state, { payload }: PayloadAction<IAuthUser>) => {
-        state.user = payload;
-        state.token = payload.token;
-        localStorage.setItem("userToken", payload.token ?? "");
+      userEndpoints.endpoints.getMe.matchFulfilled,
+      (state, { payload }: PayloadAction<ResearcherProfileResponse>) => {
+        state.me = payload;
+        // Also populate researcher with the same data (it's the combined table)
+        state.researcher = {
+          entity_id: payload.researcher_id,
+          researcher_id: payload.researcher_id,
+          email: payload.email,
+          first_name: payload.first_name,
+          last_name: payload.last_name,
+          is_active: payload.is_active,
+          system_role: payload.system_role ?? null,
+          phone: payload.phone,
+          orcid_link: payload.orcid_link,
+          job: payload.job ?? null,
+          organization: payload.organization ?? null,
+          created_at: payload.created_at,
+        };
+      },
+    );
+    // getResearcherById → sync researcher
+    builder.addMatcher(
+      researcherEndpoints.endpoints.getResearcherById.matchFulfilled,
+      (state, { payload }: PayloadAction<IResearcherDataFull>) => {
+        if (state.me && payload.researcher_id === state.me.researcher_id) {
+          state.researcher = payload;
+        }
       },
     );
   },
 });
 
-export const selectUserInfo = (state: RootStateType) => state.auth.user;
+export const selectCurrentUser = (state: RootStateType) => state.auth.me;
+export const selectResearcher = (state: RootStateType) => state.auth.researcher;
 export const selectIsAuthenticated = (state: RootStateType): boolean =>
   state.auth.token !== null;
-export const { userLoggedOut } = authSlice.actions;
+export const { userLoggedOut, setMe, setResearcher } = authSlice.actions;
 
 export default authSlice.reducer;

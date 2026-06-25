@@ -1,17 +1,24 @@
 import { neuralModelEndpoints } from "@/api/endpoints";
 import type { RootStateType } from "@/app/store";
 import type { IGenus, ISpecies } from "@/shared/types";
-import { ImageStatus, type IImageData } from "@/shared/types/image";
+import {
+  ImageStatus,
+  type IImageData,
+  type ImageStatusType,
+} from "@/shared/types/image";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { ILeafData } from "./components/LeavesContainer";
 
 interface AnalyzerState {
   images: IImageData[];
+  leavesImage: Map<number, ILeafData[]>;
   genus: IGenus | undefined;
   species: ISpecies[];
 }
 
 const initialState: AnalyzerState = {
   images: [],
+  leavesImage: new Map(),
   genus: undefined,
   species: [],
 };
@@ -22,7 +29,10 @@ export const analyzerSlice = createSlice({
   reducers: {
     updateImages(state, { payload }: { payload: IImageData[] }) {
       state.images = payload;
-      console.log(payload);
+      const new_state = state.leavesImage;
+      payload.map((item) => new_state.set(item.id, []));
+
+      state.leavesImage = new_state;
     },
     setGenus(state, { payload }: { payload: IGenus }) {
       state.genus = payload;
@@ -32,7 +42,6 @@ export const analyzerSlice = createSlice({
     builder.addMatcher(
       neuralModelEndpoints.endpoints.getClassifiers.matchFulfilled,
       (state, { payload }: PayloadAction<ISpecies[]>) => {
-        console.log(payload);
         state.species = payload;
       },
     );
@@ -41,6 +50,8 @@ export const analyzerSlice = createSlice({
 
 export const selectGenus = (state: RootStateType) => state.analyzer.genus;
 export const selectImages = (state: RootStateType) => state.analyzer.images;
+export const selectLeavesImage = (state: RootStateType) =>
+  state.analyzer.leavesImage;
 export const selectSpecies = (state: RootStateType) => state.analyzer.species;
 
 export const selectImagesCount = (state: RootStateType) => {

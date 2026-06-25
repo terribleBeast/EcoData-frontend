@@ -1,29 +1,41 @@
 import {
-  type IAuthUser,
-  type ICheckExistUser,
-  type ICreateUser,
+  type LoginRequest,
+  type RegisterRequest,
+  type ResearcherProfileResponse,
+  type TokenResponse,
 } from "@/shared/types/user";
 import { apiSlice } from "../apiSlice";
 
 export const userEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Login
-    login: builder.mutation<IAuthUser, ICheckExistUser>({
+    // Login → returns TokenResponse
+    login: builder.mutation<TokenResponse, LoginRequest>({
       query: (credentials) => ({
-        url: "/user/login",
+        url: "/auth/login",
         method: "POST",
         body: credentials,
       }),
-      transformResponse: (response: { data: IAuthUser }) => response.data,
     }),
-    // Register
-    createResearcher: builder.mutation<IAuthUser, ICreateUser>({
+    // Register → returns the created researcher UUID
+    register: builder.mutation<string, RegisterRequest>({
       query: (userData) => ({
-        url: `/user/register`,
-        body: userData,
+        url: "/auth/register",
+        body: {
+          ...userData,
+          system_role_id: "ee63a75e-c44e-4a6a-b371-10d361f3cf9f",
+        },
         method: "POST",
       }),
     }),
+    // Get current researcher profile
+    getMe: builder.query<ResearcherProfileResponse, void>({
+      query: () => "/auth/me",
+    }),
   }),
 });
-export const { useLoginMutation, useCreateResearcherMutation } = userEndpoints;
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useGetMeQuery,
+  useLazyGetMeQuery,
+} = userEndpoints;

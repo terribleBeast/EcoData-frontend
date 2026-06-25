@@ -2,39 +2,34 @@ import { useState } from "react";
 import { useUserLogin } from "./useUserLogin";
 import { useUserReg } from "./useUserReg";
 import type { IAuthFormProps, IFormLogInProps } from "../types";
-import type { ICheckExistUser, ICreateUser } from "@/shared/types/user";
-import { MD5 } from "crypto-es";
+import type { LoginRequest, RegisterRequest } from "@/shared/types/user";
+import { Alert } from "@mui/material";
 
 export const useAuthPage = () => {
   const [isLogInForm, setIsLogInForm] = useState(true);
+  const [showAlter, setShowAltert] = useState(false);
 
   const handleChangeForm = () => {
     setIsLogInForm((prev) => !prev);
   };
-  const handleClickForgotPassword = () => console.log("Forgot password");
+  const handleClickForgotPassword = () => {
+    setShowAltert(!showAlter);
+  };
 
   const { handleReg, endpointState: registerEndpointState } = useUserReg();
   const { handleLogIn, endpointState: logInEndpointState } = useUserLogin();
 
-  const hashString = (str: string) => {
-    return MD5(str).toString();
-  };
-
-  const regFormProps: IAuthFormProps<ICreateUser> = {
+  const regFormProps: IAuthFormProps<RegisterRequest> = {
     endpointState: {
       ...registerEndpointState,
       successMsg: "Пользователь создан",
     },
     isLogInForm,
     onSwitchForm: handleChangeForm,
-    onSubmit: async (formData) =>
-      handleReg({
-        ...formData,
-        password_hash: hashString(formData.password_hash),
-      }),
+    onSubmit: async (formData) => handleReg(formData),
   };
 
-  const logInFormProps: IFormLogInProps<ICheckExistUser> = {
+  const logInFormProps: IFormLogInProps<LoginRequest> = {
     endpointState: {
       ...logInEndpointState,
       successMsg: "Вход выполнен",
@@ -42,11 +37,8 @@ export const useAuthPage = () => {
     isLogInForm,
     onSwitchForm: handleChangeForm,
     onForgotPassword: handleClickForgotPassword,
-    onSubmit: async (formData) =>
-      handleLogIn({
-        ...formData,
-        password_hash: hashString(formData.password_hash),
-      }),
+    showAlertForgotPassword: showAlter,
+    onSubmit: async (formData) => handleLogIn(formData),
   };
 
   return {

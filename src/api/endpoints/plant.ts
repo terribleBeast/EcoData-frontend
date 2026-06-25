@@ -1,10 +1,12 @@
 import type {
   IPlantDataFull,
+  PlantDescriptionNested,
   IGenus,
   ISpecies,
   ILeafType,
   ILifeForm,
-  IPlantDescriptionFull,
+  PlantCreate,
+  PlantUpdate,
 } from "@/shared/types/plant";
 import { apiSlice } from "../apiSlice";
 
@@ -16,14 +18,14 @@ export const plantEndpoints = apiSlice.injectEndpoints({
         response.data,
       providesTags: [{ type: "Plants", id: "LIST" }],
     }),
-    getPlantById: builder.query<IPlantDataFull, number>({
+    getPlantById: builder.query<IPlantDataFull, string>({
       query: (id) => `/plants/${id}`,
       transformResponse: (response: { data: IPlantDataFull }) => response.data,
       providesTags: (response, error, arg) => [{ type: "Plants", id: arg }],
     }),
-    getPlantDescription: builder.query<IPlantDescriptionFull, number>({
+    getPlantDescription: builder.query<PlantDescriptionNested, string>({
       query: (id) => `/plants/descriptions/${id}`,
-      transformResponse: (response: { data: IPlantDescriptionFull }) =>
+      transformResponse: (response: { data: PlantDescriptionNested }) =>
         response.data,
     }),
     getGenera: builder.query<IGenus[], void>({
@@ -31,7 +33,7 @@ export const plantEndpoints = apiSlice.injectEndpoints({
       // transformResponse: (response: { data: IGenus[] }) => response,
       transformResponse: (response: IGenus[]) => response,
     }),
-    getSpecies: builder.query<ISpecies[], number>({
+    getSpecies: builder.query<ISpecies[], string>({
       query: (genusId) => `/plants/species?genus_id=${genusId}`,
       // transformResponse: (response: { data: ISpecies[] }) => response.data,
       transformResponse: (response: ISpecies[]) => response,
@@ -44,7 +46,7 @@ export const plantEndpoints = apiSlice.injectEndpoints({
       query: () => "/plants/life-forms",
       transformResponse: (response: { data: ILifeForm[] }) => response.data,
     }),
-    createPlant: builder.mutation<void, IPlantDataFull>({
+    createPlant: builder.mutation<void, PlantCreate>({
       query: (plant) => ({
         url: "/plants",
         method: "POST",
@@ -52,15 +54,20 @@ export const plantEndpoints = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Plants"],
     }),
-    editPlant: builder.mutation<IPlantDataFull, Partial<IPlantDataFull>>({
-      query: (plant) => ({
-        url: `/plants/${plant.id}`,
+    editPlant: builder.mutation<
+      IPlantDataFull,
+      PlantUpdate & { entity_id: string }
+    >({
+      query: ({ entity_id, ...plant }) => ({
+        url: `/plants/${entity_id}`,
         method: "PATCH",
         body: plant,
       }),
-      invalidatesTags: (plant) => [{ type: "Plants", id: plant?.id }],
+      invalidatesTags: (_result, _error, { entity_id }) => [
+        { type: "Plants", id: entity_id },
+      ],
     }),
-    deletePlant: builder.mutation<void, number>({
+    deletePlant: builder.mutation<void, string>({
       query: (id) => ({
         url: `/plants/${id}`,
         method: "DELETE",

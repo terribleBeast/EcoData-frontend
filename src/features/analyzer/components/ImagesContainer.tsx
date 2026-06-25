@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { ImageCard } from "./ImageCard";
 import type { IImageData, ImageStatusType } from "@/shared/types/image";
 import { UploadTile } from "./UploadTile";
@@ -10,6 +10,7 @@ interface ImagesContainerProps {
   onDelete: (image: IImageData) => void;
   onUpdate: (image: IImageData, newStatus: ImageStatusType) => void;
   addImages: (files: File[]) => void;
+  settedGenus: boolean;
 }
 
 export const ImagesContainer: React.FC<ImagesContainerProps> = ({
@@ -18,6 +19,7 @@ export const ImagesContainer: React.FC<ImagesContainerProps> = ({
   onDelete: handleDeleteImage,
   onUpdate: handleUpdateImage,
   addImages,
+  settedGenus,
 }) => {
   const { getRootProps, getInputProps } = useImageDropzone({
     onFilesAdded: addImages,
@@ -36,16 +38,29 @@ export const ImagesContainer: React.FC<ImagesContainerProps> = ({
         overflowY: "auto",
       }}
     >
-      <UploadTile getRootProps={getRootProps} getInputProps={getInputProps} />
-      {images.map((image, index) => (
-        <ImageCard
-          onOpen={(image) => handleOpenImageFullInfo(image)}
-          onDelete={handleDeleteImage}
-          onUpdate={handleUpdateImage}
-          image={image}
-          key={index}
-        />
-      ))}
+      {settedGenus ? (
+        <>
+          <UploadTile
+            getRootProps={getRootProps}
+            getInputProps={getInputProps}
+          />
+          {images.map((image, index) => (
+            <ImageCard
+              onOpen={(image) => handleOpenImageFullInfo(image)}
+              onDelete={handleDeleteImage}
+              onUpdate={handleUpdateImage}
+              image={image}
+              key={index}
+            />
+          ))}
+        </>
+      ) : (
+        <Typography
+          sx={{ color: "text.secondary", fontStyle: "italic", padding: "1rem" }}
+        >
+          Выберите род растения
+        </Typography>
+      )}
     </Box>
   );
 };

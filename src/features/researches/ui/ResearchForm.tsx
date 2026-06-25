@@ -15,6 +15,9 @@ import {
 import { ResearchStatus } from "@/shared/types/research";
 import { ResearcherMultiSelect } from "../components";
 
+/** Form shape — extends the full research DTO with researcher_ids used by the multiselect. */
+type ResearchFormData = IResearchDataFull & { researcher_ids?: string[] };
+
 interface IResearchFormProps extends IFormProps<IResearchDataFull> {
   title: string;
   submitLabel: string;
@@ -37,15 +40,14 @@ export const ResearchForm = ({
     control,
     handleSubmit,
     formState: { errors: formErrors },
-  } = useForm<IResearchDataFull>({
+  } = useForm<ResearchFormData>({
     mode: "onBlur",
     reValidateMode: "onSubmit",
     defaultValues: initialData ?? {
       status: ResearchStatus.ACTIVE,
-      researchers_id: [],
     },
   });
-  const commonFieldProps: ICommonFieldProps<IResearchDataFull> = {
+  const commonFieldProps: ICommonFieldProps<ResearchFormData> = {
     isLoading: endpointState.isLoading,
     errors: formErrors,
     register: register,
@@ -60,14 +62,14 @@ export const ResearchForm = ({
         endpointState={endpointState}
         onSubmit={handleSubmit(onSubmit)}
       >
-        <FormTextField<IResearchDataFull>
+        <FormTextField<ResearchFormData>
           {...commonFieldProps}
           name="title"
           label="Название"
           rules={{ required: "Название обязательно" }}
         />
 
-        <FormTextField<IResearchDataFull>
+        <FormTextField<ResearchFormData>
           {...commonFieldProps}
           name="goal"
           label="Цель"
@@ -79,10 +81,10 @@ export const ResearchForm = ({
           type="date"
           fullWidth
           disabled={endpointState.isLoading}
-          error={!!formErrors.startDate}
-          helperText={formErrors.startDate?.message as string | undefined}
+          error={!!formErrors.start_date}
+          helperText={formErrors.start_date?.message as string | undefined}
           slotProps={{ inputLabel: { shrink: true } }}
-          {...register("startDate", {
+          {...register("start_date", {
             required: "Дата начала обязательна",
           })}
         />
@@ -92,10 +94,10 @@ export const ResearchForm = ({
           type="date"
           fullWidth
           disabled={endpointState.isLoading}
-          error={!!formErrors.endDate}
-          helperText={formErrors.endDate?.message as string | undefined}
+          error={!!formErrors.end_date}
+          helperText={formErrors.end_date?.message as string | undefined}
           slotProps={{ inputLabel: { shrink: true } }}
-          {...register("endDate", {
+          {...register("end_date", {
             required: "Дата окончания обязательна",
           })}
         />
@@ -118,8 +120,8 @@ export const ResearchForm = ({
           )}
         />
 
-        <ResearcherMultiSelect<IResearchDataFull>
-          name="researchers_id"
+        <ResearcherMultiSelect<ResearchFormData>
+          name="researcher_ids"
           control={control}
           researchers={researchers}
           isLoading={endpointState.isLoading}

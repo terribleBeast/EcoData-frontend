@@ -1,4 +1,5 @@
 import { useEntityCRUD } from "@/shared/hooks/useEntityCRUD";
+import type { ILabDataFull } from "@/shared/types/lab";
 import {
   useCreateLabMutation,
   useDeleteLabMutation,
@@ -8,7 +9,7 @@ import {
 } from "@/api/endpoints";
 
 export const useLabsCrud = () => {
-  const crud = useEntityCRUD(
+  const crud = useEntityCRUD<ILabDataFull>(
     useGetLabsQuery,
     useLazyGetLabByIdQuery,
     useCreateLabMutation,

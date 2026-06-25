@@ -9,18 +9,18 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 export const ResearchersList = ({
   researchersQuery,
 }: {
-  researchersQuery: {
+  researchersQuery?: {
     data?: IResearcherData[];
     isLoading: boolean;
     isError: boolean;
     error?: FetchBaseQueryError | SerializedError;
   };
 }) => {
-  if (researchersQuery.isLoading) {
+  if (!researchersQuery || researchersQuery.isLoading) {
     return <LoadingState />;
   }
 
-  if (researchersQuery.isError) {
+  if (!researchersQuery || researchersQuery.isError) {
     return <QueryErrorState error={researchersQuery.error} />;
   }
 
@@ -42,13 +42,12 @@ export const ResearchersList = ({
     <List>
       {researchersQuery.data.map((researcher, index) => (
         <ListItemButton
-          key={researcher.id}
+          key={researcher.researcher_id}
           component={RouterLink}
-          to={`/researchers/${researcher.id}`}
+          to={`/researchers/${researcher.researcher_id}`}
         >
           <Typography>
-            {index + 1}. {researcher.surname} {researcher.name[0]}.{" "}
-            {researcher.patronymic[0]}.
+            {index + 1}. {researcher.last_name} {researcher.first_name[0]}.
           </Typography>
         </ListItemButton>
       ))}

@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   CircularProgress,
   Link as MuiLink,
@@ -6,6 +7,7 @@ import {
 } from "@mui/material";
 import { actionLinkSx } from "../../../shared/ui/styles";
 import { Link as RouterLink } from "react-router";
+import { useState } from "react";
 export const ForgotPasswordButton = ({
   onClick,
   disabled,
@@ -14,16 +16,18 @@ export const ForgotPasswordButton = ({
   disabled?: boolean;
 }) => {
   return (
-    <Button
-      variant="text"
-      disableRipple
-      disabled={disabled}
-      onClick={onClick}
-      sx={actionLinkSx}
-      aria-label="Восстановить пароль"
-    >
-      Забыли пароль?
-    </Button>
+    <>
+      <Button
+        variant="text"
+        disableRipple
+        disabled={disabled}
+        onClick={onClick}
+        sx={actionLinkSx}
+        aria-label="Восстановить пароль"
+      >
+        Забыли пароль?
+      </Button>
+    </>
   );
 };
 export const WithoutAuthButton = ({ onClick }: { onClick: () => void }) => (

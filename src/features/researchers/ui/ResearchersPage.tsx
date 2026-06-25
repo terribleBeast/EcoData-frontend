@@ -6,20 +6,21 @@ import { Delete, Edit } from "@mui/icons-material";
 import type { MRT_ColumnDef } from "material-react-table";
 import type { IResearcherDataFull } from "@/shared/types/researcher";
 import { PageChapter } from "@/shared/ui/layout";
+import { checkNullName } from "@/shared/utils";
 
 interface ResearcherMeta {
   onEdit: (row: IResearcherDataFull) => void;
-  onDelete: (researcher_id: number) => void;
+  onDelete: (researcher_id: string) => void;
 }
 
 const researcherColumns: MRT_ColumnDef<IResearcherDataFull>[] = [
   {
-    accessorKey: "fullName",
+    accessorKey: "last_name",
     header: "ФИО",
     Cell: ({ row }) => (
       <Typography sx={{ cursor: "pointer" }}>
-        {row.original.surname} {row.original.name[0]}.{" "}
-        {row.original.patronymic[0]}.
+        {row.original.last_name} {row.original.first_name[0]}.{" "}
+        {row.original.patronymic?.[0] ?? ""}.
       </Typography>
     ),
   },
@@ -28,18 +29,19 @@ const researcherColumns: MRT_ColumnDef<IResearcherDataFull>[] = [
     header: "e-mail",
   },
   {
-    accessorKey: "role",
+    accessorFn(originalRow) {
+      if (originalRow.system_role != null) return originalRow.system_role.name;
+      else return "—";
+    },
     header: "Роль",
   },
   {
-    accessorKey: "job",
+    accessorFn(originalRow) {
+      return checkNullName(originalRow.job);
+    },
     header: "Работа",
   },
-  {
-    accessorKey: "researches",
-    header: "Количество исследований",
-    accessorFn: (row) => (row.researches_id ? row.researches_id.length : 0),
-  },
+
   {
     id: "actions",
     header: "",
@@ -66,7 +68,7 @@ const researcherColumns: MRT_ColumnDef<IResearcherDataFull>[] = [
             aria-label="Удалить"
             onClick={(e) => {
               e.stopPropagation();
-              meta?.onDelete(row.original.id);
+              meta?.onDelete(row.original.researcher_id);
             }}
           >
             <Delete color="error" />
@@ -80,7 +82,6 @@ const researcherColumns: MRT_ColumnDef<IResearcherDataFull>[] = [
 const ResearchersPage = () => {
   const { items: researchers, remove, queriesState } = useResearchersCrud();
   const navigate = useNavigate();
-
   return (
     <PageChapter
       header={{
@@ -92,11 +93,11 @@ const ResearchersPage = () => {
         columns={researcherColumns}
         data={researchers}
         isLoading={queriesState.list.isLoading}
-        onRowClick={(row) => navigate(`/researchers/${row.id}`)}
+        onRowClick={(row) => navigate(`/researchers/${row.researcher_id}`)}
         meta={{
           onEdit: (researcher: IResearcherDataFull) =>
-            navigate(`/researchers/${researcher.id}/edit`),
-          onDelete: (researcher_id: number) => {
+            navigate(`/researchers/${researcher.researcher_id}/edit`),
+          onDelete: (researcher_id: string) => {
             remove(researcher_id);
           },
         }}

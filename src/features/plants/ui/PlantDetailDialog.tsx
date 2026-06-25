@@ -21,7 +21,7 @@ const PlantDetailDialog = () => {
   const { id } = useParams<{ id: string }>();
 
   const dialogType: DetailDialogModeType = getDialogType(pathname);
-  const { plantQuery, descriptionQuery } = usePlantDetail(id ? Number(id) : -1);
+  const { plantQuery, descriptionQuery } = usePlantDetail(id ?? "-1");
 
   return (
     <GenericEntityDetailDialog<IPlantDataFull>

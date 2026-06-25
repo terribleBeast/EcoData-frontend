@@ -9,7 +9,7 @@ import type { SerializedError } from "@reduxjs/toolkit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type {
   IPlantDataFull,
-  IPlantDescriptionFull,
+  PlantDescriptionNested,
 } from "@/shared/types/plant";
 
 export const PlantFullInfo = ({
@@ -18,31 +18,30 @@ export const PlantFullInfo = ({
 }: {
   plant: IPlantDataFull;
   descriptionQuery: {
-    data?: IPlantDescriptionFull;
+    data?: PlantDescriptionNested | null;
     isLoading: boolean;
     isError: boolean;
     error?: FetchBaseQueryError | SerializedError;
   };
 }) => {
+  const desc = descriptionQuery.data ?? plant.plant_description;
+
   const chaptersInfo: IChapterData[] = [
     {
       title: "Общая информация",
       fields: [
         {
-          name: "Род",
-          value: descriptionQuery.data?.genus.name ?? "—",
-        },
-        {
           name: "Вид",
-          value: descriptionQuery.data?.species.name ?? "—",
+          value:
+            desc?.species?.latin_name ?? desc?.species?.russian_name ?? "—",
         },
         {
           name: "Тип листа",
-          value: descriptionQuery.data?.leaf_type.name ?? "—",
+          value: desc?.leaf_blade_type?.name ?? "—",
         },
         {
           name: "Жизненная форма",
-          value: descriptionQuery.data?.life_form.name ?? "—",
+          value: desc?.plant_life_form?.name ?? "—",
         },
       ],
     },
@@ -51,7 +50,7 @@ export const PlantFullInfo = ({
       fields: [
         {
           name: "Описание",
-          value: descriptionQuery.data?.description ?? plant.additional_info,
+          value: desc?.description ?? plant.description ?? "—",
         },
       ],
     },

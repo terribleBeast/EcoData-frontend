@@ -1,15 +1,15 @@
-import {
-  useGetPlantByIdQuery,
-  useGetPlantDescriptionQuery,
-} from "@/api/endpoints";
+import { useGetPlantByIdQuery } from "@/api/endpoints";
 
-export const usePlantDetail = (id: number) => {
-  const plantQuery = useGetPlantByIdQuery(id, { skip: id === -1 });
+export const usePlantDetail = (id: string) => {
+  const plantQuery = useGetPlantByIdQuery(id, { skip: id === "-1" });
 
-  const descriptionQuery = useGetPlantDescriptionQuery(
-    plantQuery.data?.plant_description_id ?? -1,
-    { skip: !plantQuery.data?.plant_description_id },
-  );
+  const plant = plantQuery.data;
+  const descriptionQuery = {
+    data: plant?.plant_description ?? undefined,
+    isLoading: false,
+    isError: false,
+    error: undefined,
+  };
 
   return { plantQuery, descriptionQuery };
 };
