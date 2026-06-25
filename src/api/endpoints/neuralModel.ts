@@ -21,15 +21,8 @@ type NeuralModelResponse = {
 
 export const neuralModelEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getClassifiers: builder.query<ISpecies[], string>({
-      query: (id) => ({
-        url: `analyzer/models`,
-        params: { genus_id: id },
-      }),
-      transformResponse: (response: NeuralModelResponse[]): ISpecies[] => {
-        console.log(response[0].species);
-        return response.map((item) => item.species);
-      },
+    getAvailableSpeciesByGenus: builder.query<ISpecies[], string>({
+      query: (genusId) => `/analyzer/available-species/${genusId}`,
     }),
     updatePrediction: builder.mutation<
       IPrediction[],
@@ -54,6 +47,6 @@ export const neuralModelEndpoints = apiSlice.injectEndpoints({
 
 export const {
   useUpdatePredictionMutation,
-  useLazyGetClassifiersQuery,
-  useGetClassifiersQuery,
+  useGetAvailableSpeciesByGenusQuery,
+  useLazyGetAvailableSpeciesByGenusQuery,
 } = neuralModelEndpoints;

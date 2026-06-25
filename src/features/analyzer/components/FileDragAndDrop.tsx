@@ -2,43 +2,33 @@ import { useCallback } from "react";
 import { Box, Paper, Typography } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 import { useDropzone } from "react-dropzone";
-import type { IImageData, ImageStatusType } from "@/shared/types/image";
 
 export interface IFileDragAndDropProps {
-  onImagesAdded: (newImages: IImageData[]) => void;
-  defaultStatus: ImageStatusType;
-  selectedClassifier: string;
+  onFilesAdded: (files: File[]) => void;
+  disabled?: boolean;
 }
 
 export const FileDragAndDrop = ({
-  onImagesAdded,
-  defaultStatus,
-  selectedClassifier,
+  onFilesAdded,
+  disabled = false,
 }: IFileDragAndDropProps) => {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const newFiles: IImageData[] = acceptedFiles.map((file) => ({
-        id: Math.random(),
-        src: file.type.startsWith("image/")
-          ? URL.createObjectURL(file)
-          : undefined,
-        name: file.name,
-        file,
-        key: `file-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-        predictions: undefined,
-        status: defaultStatus,
-        classifier: selectedClassifier,
-      }));
-      onImagesAdded(newFiles);
+      if (acceptedFiles.length === 0) return;
+
+      onFilesAdded(acceptedFiles);
     },
-    [selectedClassifier, onImagesAdded, defaultStatus],
+    [onFilesAdded],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    disabled,
     accept: {
-      "image/*": [".jpeg", ".png", ".jpg"],
+      "image/jpeg": [".jpeg", ".jpg"],
+      "image/png": [".png"],
     },
+    multiple: true,
   });
 
   return (
@@ -47,7 +37,8 @@ export const FileDragAndDrop = ({
       sx={{
         padding: "0.5rem",
         width: "150px",
-        // boxShadow: borderStyle,
+        opacity: disabled ? 0.5 : 1,
+        cursor: disabled ? "not-allowed" : "pointer",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -58,25 +49,21 @@ export const FileDragAndDrop = ({
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          textAlign: "center",
         }}
       >
         <Box>
           <input {...getInputProps()} />
+
           <CloudUpload
             fontSize="large"
             color={isDragActive ? "primary" : "action"}
           />
-          {/*<Typography>
-            {isDragActive
-              ? "Отпустите файлы здесь"
-              : "Перетащите файлы сюда или кликните для выбора"}
-          </Typography>*/}
+
           <Typography variant="caption" color="text.secondary">
-            Поддерживаются изображения
+            {disabled ? "Сначала выберите род" : "Поддерживаются изображения"}
           </Typography>
         </Box>
-        {/*</Box>*/}
-        {/*</Box>*/}
       </Box>
     </Paper>
   );

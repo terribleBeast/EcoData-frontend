@@ -49,12 +49,21 @@ export interface ImageCreate {
 // ── Local (client-side) image state used in the Analyzer UI ──
 
 export interface IImageData {
-  id: number; // local sequential id for UI drag-and-drop
-  key: string; // file object_key or local identifier
-  src: string | undefined; // object URL for preview
-  file: File; // JS File object
+  id: string;
+  key: string;
+
   name: string;
-  predictions?: IPrediction[];
+  size: number;
+
+  // Use this for preview in UI.
+  src: string;
+
+  // Optional alias if some components still use previewUrl.
+  previewUrl?: string;
+
   status: ImageStatusType;
-  classifier: string; // genus latin_name chosen for prediction
+  predictions: IPrediction[];
+
+  // Optional because before prediction there is no classifier.
+  classifier?: string;
 }

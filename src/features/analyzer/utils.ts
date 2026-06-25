@@ -19,11 +19,7 @@ export function exportImagesToCsv(images: IImageData[]): void {
   const rows: string[] = [["Id", "Изображение", "Род", ...species].join(",")];
 
   images.forEach((image, index) => {
-    const row: (string | number)[] = [
-      index + 1,
-      image.name || "Unknown",
-      image.classifier,
-    ];
+    const row: (string | number)[] = [index + 1, image.name || "Unknown"];
 
     species.forEach((speciesName) => {
       const prediction = image.predictions?.find(

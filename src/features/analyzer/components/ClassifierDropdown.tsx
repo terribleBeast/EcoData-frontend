@@ -1,60 +1,44 @@
 import { Autocomplete, TextField } from "@mui/material";
-import { type IGenus } from "@/shared/types";
+import type { IGenus } from "@/shared/types";
 
-interface ClassifierDropdownProps {
-  onSelect: (item: IGenus) => void;
-  selectedGenus: IGenus | undefined;
-  genera: IGenus[];
-}
+type GenusLike = IGenus & {
+  id?: string;
+  genus_id?: string;
+};
+
+type Props = {
+  value: GenusLike | undefined;
+  options: GenusLike[];
+  loading?: boolean;
+  onSelect: (genus: GenusLike | null) => void | Promise<void>;
+};
+
+const getGenusId = (genus: GenusLike | null | undefined) => {
+  return genus?.id ?? genus?.genus_id;
+};
 
 export const ClassifierDropdown = ({
+  value,
+  options,
+  loading = false,
   onSelect,
-  genera,
-  selectedGenus,
-}: ClassifierDropdownProps) => {
+}: Props) => {
   return (
     <Autocomplete
-      options={genera}
-      value={selectedGenus || null}
-      onChange={(_, value) => {
-        if (value) onSelect(value);
+      value={value ?? null}
+      options={options}
+      loading={loading}
+      getOptionLabel={(option) => option.russian_name ?? ""}
+      isOptionEqualToValue={(option, selected) =>
+        getGenusId(option) === getGenusId(selected)
+      }
+      onChange={(_, selectedOption) => {
+        console.log("AUTOCOMPLETE CHANGE:", selectedOption);
+        void onSelect(selectedOption);
       }}
-      getOptionLabel={(option) => option.latin_name}
-      isOptionEqualToValue={(o, v) => o.id === v.id}
-      renderInput={(params) => <TextField {...params} fullWidth />}
-      noOptionsText="Нет доступных вариантов"
-      // renderOption={(props, option) => (
-      //   <Box
-      //     component="li"
-      //     {...props}
-      //     display="flex"
-      //     alignItems="center"
-      //     gap={1}
-      //   >
-      //     <AppleIcon
-      //       color="success"
-      //       fontSize="small"
-      //     />
-
-      //     <Typography>
-      //       {option.name}
-      //     </Typography>
-      //   </Box>
-      // )}
+      renderInput={(params) => (
+        <TextField {...params} placeholder="Введите род" />
+      )}
     />
-
-    // renderOption={(props, option) => (
-    //   <Box component="li" {...props}>
-    //     <Box>
-    //       <Typography sx={{ fontWeight: 800, fontSize: "3rem" }}>
-    //         {option}
-    //       </Typography>
-
-    //       {/*<Typography variant="caption" color="text.secondary">
-    //         {option.imagesCount} изображений
-    //       </Typography>*/}
-    //     </Box>
-    //   </Box>
-    // )}
   );
 };

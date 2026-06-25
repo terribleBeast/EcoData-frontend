@@ -10,15 +10,26 @@ import { PageChapter } from "@/shared/ui/layout/PageChapter";
 import { AnalyzerHeader } from "./AnalyzerHeader";
 import { useClassifiers } from "../hooks/useClassifiers";
 import { useSelector } from "react-redux";
-import { selectGenus, selectImages, selectImagesCount } from "../analyzerSlice";
+import {
+  markImagesProcessing,
+  replaceProcessedImages,
+  selectGenus,
+  selectImages,
+  selectImagesCount,
+} from "../analyzerSlice";
 import { LeavesContainer } from "../components/LeavesContainer";
 
 const AnalyzerPage = () => {
-  const classifiersState = useClassifiers();
   const images = useSelector(selectImages);
 
-  const selectedGenus = useSelector(selectGenus);
   const imagesCount = useSelector(selectImagesCount);
+  const {
+    selectedGenus,
+    classifiers,
+    generaQuery,
+    availableSpeciesQuery,
+    handleSelectGenera,
+  } = useClassifiers();
 
   const {
     selectedImage,
@@ -31,6 +42,8 @@ const AnalyzerPage = () => {
     handleAddLeaves,
     handleDeleteLeaves,
     leavesImage,
+    isProcessing,
+    progress,
   } = useAnalyzerPage();
   const handleDownloadResult = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -47,12 +60,12 @@ const AnalyzerPage = () => {
       >
         {selectedImage && <ImageFullInfo image={selectedImage} />}
       </Dialog>
-
       <ClassifiersChapter
         selectedGenus={selectedGenus}
-        generaQuery={classifiersState.generaQuery}
-        classifiers={classifiersState.classifiers}
-        handleSelectGenera={classifiersState.handleSelectGenera}
+        classifiers={classifiers}
+        generaQuery={generaQuery}
+        availableSpeciesQuery={availableSpeciesQuery}
+        handleSelectGenera={handleSelectGenera}
       />
 
       <PageChapter
@@ -71,6 +84,13 @@ const AnalyzerPage = () => {
           maxHeight: "600px",
         }}
       >
+        {isProcessing && (
+          <div>
+            <div>Stage: {progress.stage}</div>
+            {progress.model && <div>Model: {progress.model}</div>}
+            {progress.progress && <div>Progress: {progress.progress}</div>}
+          </div>
+        )}
         <ImagesContainer
           addImages={addImages}
           images={images}

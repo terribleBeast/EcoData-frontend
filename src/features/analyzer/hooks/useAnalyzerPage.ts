@@ -2,10 +2,16 @@ import { useState, useCallback } from "react";
 import type { IImageData } from "../../../shared/types/image";
 import { ImageStatus } from "../../../shared/types/image";
 import { useImageState } from "./useImageState";
-import { useImagesProcessing } from "./useImagesProcessing";
-import { useSelector } from "react-redux";
-import { selectGenus, selectImages, selectLeavesImage } from "../analyzerSlice";
+import { usePredictionWsSession } from "./usePredictionWsSession";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  markImagesProcessing,
+  replaceProcessedImages,
+  selectGenus,
+  selectImages,
+} from "../analyzerSlice";
 import { useLeavesState } from "./useLeavesState";
+import { useAnalyzerFiles } from "./useAnalyzerFiles";
 
 export function useAnalyzerPage() {
   const { handleAddLeaves, handleDeleteLeaves, leaves } = useLeavesState();
@@ -13,11 +19,14 @@ export function useAnalyzerPage() {
   const [selectedImage, setSelectedImage] = useState<IImageData | null>(null);
   const selectedGenus = useSelector(selectGenus);
   const images = useSelector(selectImages);
-  const leavesImage = useSelector(selectLeavesImage);
-  const { getFile, addImages, deleteImage, updateImageStatus, replaceImages } =
-    useImageState();
-
-  const { processImages } = useImagesProcessing(getFile);
+  const leavesImage = new Map();
+  const {
+    getImageFile,
+    addImages,
+    deleteImage,
+    updateImageStatus,
+    replaceImages,
+  } = useImageState();
 
   // const handleSelectClassifier = useCallback((index: number) => {
   //   setSelectedClassifier(classifiers[index].plant);
@@ -31,42 +40,65 @@ export function useAnalyzerPage() {
     setSelectedImage(null);
   }, []);
 
+  // const handleProcessImages = useCallback(async () => {
+  //   if (selectedGenus?.id === undefined) return;
+
+  //   const toProcess = images.filter(
+  //     (img) => img.status === ImageStatus.UPLOADED,
+  //   );
+
+  //   if (toProcess.length === 0) return;
+
+  //   const toProcessKeys = new Set(toProcess.map((img) => img.key));
+
+  //   const markedProcessing = images.map((img) =>
+  //     toProcessKeys.has(img.key)
+  //       ? { ...img, status: ImageStatus.PROCESSING }
+  //       : img,
+  //   );
+
+  //   replaceImages(markedProcessing);
+
+  //   const processed = await processImagesWs(toProcess, selectedGenus.id);
+
+  //   const resultByKey = new Map(
+  //     processed.map((result) => [result.key, result]),
+  //   );
+
+  //   const merged = markedProcessing.map(
+  //     (img) => resultByKey.get(img.key) ?? img,
+  //   );
+
+  //   replaceImages(merged);
+  // }, [images, selectedGenus, replaceImages, processImagesWs]);
+
+  const dispatch = useDispatch();
+
+  // const images = useSelector(selectAnalyzerImages);
+  // const selectedGenus = useSelector(selectSelectedGenus);
+
+  const { addFiles, getFile, deleteFile } = useAnalyzerFiles();
+
+  const { processImagesWs, closeSession, progress, isProcessing } =
+    usePredictionWsSession(getFile);
+
+  const selectedGenusId = selectedGenus?.id;
+
   const handleProcessImages = useCallback(async () => {
-    if (selectedGenus?.id === undefined) return;
-    // Mark all uploaded images as PROCESSING immediately
+    if (!selectedGenusId) return;
 
-    for (const image of images) {
-      if (image.status === ImageStatus.UPLOADED) {
-        updateImageStatus(image, ImageStatus.PROCESSING);
-      }
-    }
-
-    // Filter to images that need processing (UPLOADED at time of click)
     const toProcess = images.filter(
       (img) => img.status === ImageStatus.UPLOADED,
     );
 
     if (toProcess.length === 0) return;
 
-    // 1) Mark as PROCESSING — single bulk dispatch
-    const toProcessKeys = new Set(toProcess.map((img) => img.key));
-    const markedProcessing = images.map((img) =>
-      toProcessKeys.has(img.key)
-        ? { ...img, status: ImageStatus.PROCESSING }
-        : img,
-    );
-    replaceImages(markedProcessing);
-    // 2) Run predictions
-    const processed = await processImages(toProcess, selectedGenus?.id);
+    dispatch(markImagesProcessing(toProcess.map((image) => image.key)));
 
-    // 3) Merge results back — single bulk dispatch
-    const resultByKey = new Map(processed.map((r) => [r.key, r]));
-    const merged = markedProcessing.map(
-      (img) => resultByKey.get(img.key) ?? img,
-    );
-    replaceImages(merged);
-  }, [images, processImages, updateImageStatus, selectedGenus, replaceImages]);
+    const processed = await processImagesWs(toProcess, selectedGenusId);
 
+    dispatch(replaceProcessedImages(processed));
+  }, [dispatch, images, selectedGenusId, processImagesWs]);
   return {
     selectedImage,
     addImages,
@@ -75,6 +107,8 @@ export function useAnalyzerPage() {
     openImageFullInfo,
     closeImageFullInfo,
     handleProcessImages,
+    progress,
+    isProcessing,
     handleAddLeaves,
     handleDeleteLeaves,
     leavesImage,
