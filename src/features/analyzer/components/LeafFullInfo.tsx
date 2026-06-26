@@ -87,7 +87,7 @@ export const LeafFullInfo = ({ leaf }: LeafFullInfoProps) => {
               value: leaf.bestPrediction ? (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Chip
-                    size="small"
+                    size="medium"
                     color="success"
                     label={leaf.bestPrediction.classifier}
                   />

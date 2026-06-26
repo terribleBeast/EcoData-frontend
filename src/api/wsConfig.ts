@@ -1,4 +1,4 @@
-export function buildAnalyzerWsUrl(genusId: string, token?: string): string {
+  export function buildAnalyzerWsUrl(genusId: string, token?: string): string {
   const apiBaseUrl =
     import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api/v1";
 

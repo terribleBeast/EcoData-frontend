@@ -12,13 +12,20 @@ import { getStatusBorderColor } from "../utils";
 interface ImageCardProps {
   image: IImageData;
   prediction?: IPrediction;
+  leafCount?: number;
   onDelete: (image: IImageData) => void;
   onOpen: (image: IImageData) => void;
   onUpdate: (image: IImageData, newStatus: ImageStatusType) => void;
 }
-
 export const ImageCard = memo(
-  ({ image, prediction, onDelete, onOpen, onUpdate }: ImageCardProps) => {
+  ({
+    image,
+    prediction,
+    leafCount,
+    onDelete,
+    onOpen,
+    onUpdate,
+  }: ImageCardProps) => {
     const initialized = useRef(false);
 
     useEffect(() => {
@@ -33,50 +40,132 @@ export const ImageCard = memo(
     return (
       <Paper
         sx={{
-          padding: "0.5rem",
           width: "150px",
           height: "250px",
+          padding: "0.6rem",
           boxShadow: borderStyle,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
+          borderRadius: "10px",
+          overflow: "hidden",
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <img
+        <Box
+          onClick={() => onOpen(image)}
+          sx={{
+            width: "100%",
+            height: "110px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: "8px",
+            backgroundColor: "#F7FAF7",
+            cursor: "pointer",
+            overflow: "hidden",
+            flexShrink: 0,
+          }}
+        >
+          <Box
+            component="img"
             src={image.src ?? "no-image-icon_1200.png"}
-            alt="изображение"
-            width="100px"
-            height="100px"
-            style={{
-              border: "1px solid black",
-              borderRadius: "5px",
-              cursor: "pointer",
+            alt={image.name || "изображение"}
+            sx={{
+              maxWidth: "100%",
+              maxHeight: "100%",
+              width: "auto",
+              height: "auto",
+              objectFit: "contain",
+              objectPosition: "center",
+              display: "block",
             }}
-            onClick={() => onOpen(image)}
           />
         </Box>
 
-        <Box>
-          <Typography sx={{ overflowWrap: "break-word", fontWeight: "bold" }}>
+        <Box
+          sx={{
+            marginTop: "0.6rem",
+            flexGrow: 1,
+            minHeight: 0,
+          }}
+        >
+          <Typography
+            title={image.name}
+            sx={{
+              fontWeight: 700,
+              fontSize: "1.2rem",
+              lineHeight: 1.25,
+              overflow: "hidden",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              wordBreak: "break-word",
+            }}
+          >
             {image.name || "Не найдено"}
           </Typography>
 
+          {leafCount !== undefined && (
+            <Typography
+              sx={(theme) => ({
+                marginTop: "1rem",
+                fontSize: "1.2rem",
+                lineHeight: 1.15,
+                fontWeight: 600,
+                color: theme.palette.secondary.main,
+              })}
+            >
+              Листьев: {leafCount}
+            </Typography>
+          )}
+
           {prediction && (
-            <>
-              <Typography sx={{ fontSize: "0.85rem" }}>
+            <Box sx={{ marginTop: "0.25rem" }}>
+              <Typography
+                title={prediction.classifier}
+                sx={{
+                  fontSize: "1.2rem",
+                  lineHeight: 1.15,
+                  color: "text.secondary",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  marginTop: "0.5rem",
+                }}
+              >
                 {prediction.classifier}
               </Typography>
-              <Typography sx={{ fontSize: "0.85rem" }}>
+
+              <Typography
+                sx={{
+                  fontSize: "1rem",
+                  lineHeight: 1.15,
+                  fontWeight: 700,
+                  color: "success.dark",
+                  marginTop: "0.25rem",
+                }}
+              >
                 {prediction.probability.toFixed(2)}%
               </Typography>
-            </>
+            </Box>
           )}
         </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "end" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            flexShrink: 0,
+            marginTop: "0.4rem",
+          }}
+        >
           <Delete
-            sx={{ color: "red", fontSize: "medium", cursor: "pointer" }}
+            sx={(theme) => ({
+              color: theme.palette.error.main,
+              fontSize: "1.1rem",
+              cursor: "pointer",
+            })}
             onClick={() => onDelete(image)}
           />
         </Box>

@@ -107,13 +107,13 @@ const AnalyzerPage = () => {
           maxHeight: "600px",
         }}
       >
-        {isProcessing && (
+        {/*{isProcessing && (
           <div>
             <div>Stage: {progress.stage}</div>
             {progress.model && <div>Model: {progress.model}</div>}
             {progress.progress && <div>Progress: {progress.progress}</div>}
           </div>
-        )}
+        )}*/}
         <ImagesContainer
           addImages={addImages}
           images={images}
@@ -121,6 +121,7 @@ const AnalyzerPage = () => {
           onOpen={openImageFullInfo}
           onDelete={deleteImage}
           onUpdate={updateImageStatus}
+          leaves={leaves}
         />
       </PageChapter>
       <PageChapter

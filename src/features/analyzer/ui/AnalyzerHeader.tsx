@@ -143,10 +143,10 @@ export const AnalyzerHeader = ({
           }}
         >
           <StatusCounterChip
-            icon={<FileUpload fontSize="small" />}
-            label="Загружено"
-            count={imagesCount.uploaded}
-            status={ImageStatus.UPLOADED}
+            icon={<Check fontSize="small" />}
+            label="Обработано"
+            count={imagesCount.success}
+            status={ImageStatus.PROCESSED}
           />
 
           <StatusCounterChip
@@ -155,12 +155,11 @@ export const AnalyzerHeader = ({
             count={imagesCount.processing}
             status={ImageStatus.PROCESSING}
           />
-
           <StatusCounterChip
-            icon={<Check fontSize="small" />}
-            label="Обработано"
-            count={imagesCount.success}
-            status={ImageStatus.PROCESSED}
+            icon={<FileUpload fontSize="small" />}
+            label="Загружено"
+            count={imagesCount.uploaded}
+            status={ImageStatus.UPLOADED}
           />
 
           <StatusCounterChip

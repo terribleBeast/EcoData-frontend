@@ -29,6 +29,7 @@ export const FileDragAndDrop = ({
       "image/png": [".png"],
     },
     multiple: true,
+    maxSize: 10,
   });
 
   return (

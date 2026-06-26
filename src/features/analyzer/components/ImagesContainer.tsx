@@ -3,6 +3,7 @@ import { ImageCard } from "./ImageCard";
 import type { IImageData, ImageStatusType } from "@/shared/types/image";
 import { UploadTile } from "./UploadTile";
 import { useImageDropzone } from "../hooks/useImageDropZone";
+import type { ILeafData } from "./LeavesContainer";
 
 interface ImagesContainerProps {
   images: IImageData[];
@@ -11,16 +12,21 @@ interface ImagesContainerProps {
   onUpdate: (image: IImageData, newStatus: ImageStatusType) => void;
   addImages: (files: File[]) => void;
   settedGenus: boolean;
+  leaves: ILeafData[];
 }
 
 export const ImagesContainer: React.FC<ImagesContainerProps> = ({
   images,
-  onOpen: handleOpenImageFullInfo,
-  onDelete: handleDeleteImage,
-  onUpdate: handleUpdateImage,
+  onOpen,
+  onDelete,
+  onUpdate,
   addImages,
   settedGenus,
+  leaves,
 }) => {
+  const getLeafCount = (imageKey: string) => {
+    return leaves.filter((leaf) => leaf.image_key === imageKey).length;
+  };
   const { getRootProps, getInputProps } = useImageDropzone({
     onFilesAdded: addImages,
   });
@@ -44,13 +50,14 @@ export const ImagesContainer: React.FC<ImagesContainerProps> = ({
             getRootProps={getRootProps}
             getInputProps={getInputProps}
           />
-          {images.map((image, index) => (
+          {images.map((image) => (
             <ImageCard
-              onOpen={(image) => handleOpenImageFullInfo(image)}
-              onDelete={handleDeleteImage}
-              onUpdate={handleUpdateImage}
-              image={image}
               key={image.key}
+              image={image}
+              leafCount={getLeafCount(image.key)}
+              onOpen={onOpen}
+              onDelete={onDelete}
+              onUpdate={onUpdate}
             />
           ))}
         </>
