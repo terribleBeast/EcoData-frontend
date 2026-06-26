@@ -1,3 +1,5 @@
+import type { IPlantDataFull } from "@/features/plants/types";
+
 export type UUID = string;
 
 export const ResearchStatus = {
@@ -38,6 +40,7 @@ export interface IResearchDataFull extends IResearchData {
   start_date?: string | null;
   end_date?: string | null;
   status: ResearchStatus | string;
+  plants?: IPlantDataFull[];
 }
 
 export interface IPredictionTable {

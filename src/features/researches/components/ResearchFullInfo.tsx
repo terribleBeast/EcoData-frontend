@@ -14,6 +14,7 @@ import type { SerializedError } from "@reduxjs/toolkit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useSelector } from "react-redux";
 import { selectResearcher } from "@/features/user/authSlice";
+import { ResearchPlantsList } from "./ResearchPlantsList";
 
 export const ResearchFullInfo = ({
   research,
@@ -93,7 +94,8 @@ export const ResearchFullInfo = ({
     <DialogPanel>
       <DialogSection title="Таблица результатов" width="70%">
         <Card sx={{ overflowY: "auto", overflowX: "auto", maxHeight: "60vh" }}>
-          <ResultTable predictionQuery={predictionQuery} />
+          {/*<ResultTable predictionQuery={predictionQuery} />*/}
+          <ResearchPlantsList plants={research.plants ?? []} />
         </Card>
       </DialogSection>
       <DialogSection title="Сведения" width="30%">

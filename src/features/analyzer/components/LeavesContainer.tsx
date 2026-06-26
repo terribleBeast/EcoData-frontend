@@ -9,6 +9,8 @@ export interface ILeafData {
   image: IImageData;
   predictions: IPrediction[];
   bestPrediction?: IPrediction;
+  plantId?: string;
+  draftPlantId?: string;
 }
 interface LeavesContainerProps {
   leaves: ILeafData[];

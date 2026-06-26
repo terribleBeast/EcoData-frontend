@@ -68,3 +68,13 @@ export interface IPlantFormData {
   plant_description_text?: string | null;
   description?: string | null;
 }
+
+export interface ILeafData {
+  id: string;
+  leafIndex?: number;
+
+  genusId: string;
+
+  plantId?: string;
+  draftPlantId?: string;
+}

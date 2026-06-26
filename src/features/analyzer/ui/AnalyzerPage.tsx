@@ -13,11 +13,65 @@ import { selectImages, selectImagesCount } from "../analyzerSlice";
 import { LeavesContainer } from "../components/LeavesContainer";
 import LeafFullInfo from "../components/LeafFullInfo";
 import { LeavesHeader } from "./LeavesHeader";
-import { useGetResearchesQuery } from "@/api/endpoints";
+import { useGetPlantsQuery, useGetResearchesQuery } from "@/api/endpoints";
+import { useAssignLeavesToPlantsMutation } from "@/api/endpoints/leaves";
+import { useState } from "react";
 
 const AnalyzerPage = () => {
+  const {
+    selectedImage,
+    addImages,
+    deleteImage,
+    updateImageStatus,
+    openImageFullInfo,
+    closeImageFullInfo,
+    handleProcessImages,
+    handleDeleteLeaves,
+    leaves,
+    closeLeafFullInfo,
+    openLeafFullInfo,
+    selectedLeaf,
+  } = useAnalyzerPage();
   const images = useSelector(selectImages);
+  const [leafPlantDrafts, setLeafPlantDrafts] = useState<
+    Record<string, string>
+  >({});
+  const [assignLeavesToPlants, assignState] = useAssignLeavesToPlantsMutation();
+  const plantsQuery = useGetPlantsQuery();
 
+  const handleChangeLeafPlantDraft = (leafId: string, plantId: string) => {
+    setLeafPlantDrafts((prev) => ({
+      ...prev,
+      [leafId]: plantId,
+    }));
+  };
+
+  const hasUnsavedLeafAssignments = leaves.some((leaf) => {
+    const draftPlantId = leafPlantDrafts[leaf.leaf_id];
+
+    return Boolean(draftPlantId && draftPlantId !== leaf.plantId);
+  });
+
+  const handleSaveLeaves = async () => {
+    const assignments = leaves
+      .filter((leaf) => {
+        const draftPlantId = leafPlantDrafts[leaf.leaf_id];
+
+        return Boolean(draftPlantId && draftPlantId !== leaf.plantId);
+      })
+      .map((leaf) => ({
+        leaf_id: leaf.leaf_id,
+        plant_id: leafPlantDrafts[leaf.leaf_id],
+      }));
+
+    if (!assignments.length) {
+      return;
+    }
+
+    await assignLeavesToPlants(assignments).unwrap();
+
+    setLeafPlantDrafts({});
+  };
   const imagesCount = useSelector(selectImagesCount);
   const researchesQuery = useGetResearchesQuery();
   const handleAddToResearch = (research: {
@@ -41,26 +95,6 @@ const AnalyzerPage = () => {
   const { selectedGenus, classifiers, generaQuery, handleSelectGenera } =
     useClassifiers();
 
-  const {
-    selectedImage,
-    addImages,
-    deleteImage,
-    updateImageStatus,
-    openImageFullInfo,
-    closeImageFullInfo,
-    handleProcessImages,
-    handleDeleteLeaves,
-    leaves,
-    closeLeafFullInfo,
-    openLeafFullInfo,
-    selectedLeaf,
-  } = useAnalyzerPage();
-
-  const handleDownloadResult = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    // exportImagesToCsv(images);
-  };
-
   return (
     <>
       {selectedImage && (
@@ -68,10 +102,17 @@ const AnalyzerPage = () => {
           <ImageFullInfo image={selectedImage} leaves={leaves} />
         </Dialog>
       )}
-
       {selectedLeaf && (
         <Dialog open onClose={closeLeafFullInfo} fullWidth maxWidth="xl">
-          <LeafFullInfo leaf={selectedLeaf} />
+          <LeafFullInfo
+            leaf={{
+              ...selectedLeaf,
+              draftPlantId: leafPlantDrafts[selectedLeaf.leaf_id],
+            }}
+            plants={plantsQuery.data ?? []}
+            leafGenusId={selectedGenus?.id ?? ""}
+            onChangePlantDraft={handleChangeLeafPlantDraft}
+          />
         </Dialog>
       )}
       <ClassifiersChapter
@@ -118,7 +159,14 @@ const AnalyzerPage = () => {
       </PageChapter>
       <PageChapter
         header={{
-          component: <LeavesHeader leavesCount={leaves.length} />,
+          component: (
+            <LeavesHeader
+              leavesCount={leaves.length}
+              onSave={handleSaveLeaves}
+              isSaving={assignState.isLoading}
+              hasUnsavedChanges={hasUnsavedLeafAssignments}
+            />
+          ),
         }}
       >
         <LeavesContainer

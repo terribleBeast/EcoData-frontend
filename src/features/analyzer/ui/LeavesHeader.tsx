@@ -1,13 +1,20 @@
-import { Chip, Stack } from "@mui/material";
+import { Button, Chip, Stack } from "@mui/material";
 import { Spa } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
 import { ChapterHeaderTemplate } from "@/shared/ui/ChapterHeader";
 
 type LeavesHeaderProps = {
   leavesCount: number;
+  onSave: () => void;
+  isSaving?: boolean;
+  hasUnsavedChanges?: boolean;
 };
-
-export const LeavesHeader = ({ leavesCount }: LeavesHeaderProps) => {
+export const LeavesHeader = ({
+  leavesCount,
+  onSave,
+  isSaving = false,
+  hasUnsavedChanges = false,
+}: LeavesHeaderProps) => {
   return (
     <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
       <ChapterHeaderTemplate
@@ -15,29 +22,23 @@ export const LeavesHeader = ({ leavesCount }: LeavesHeaderProps) => {
           title: "Листья",
         }}
       />
+
       <Chip
         label={leavesCount}
         size="small"
         color="success"
         variant="outlined"
       />
-      {/*<Chip
-        icon={<Spa fontSize="small" />}
-        label={`Всего: ${leavesCount}`}
-        size="medium"
-        variant="outlined"
-        sx={(theme) => ({
-          fontSize: "0.95rem",
-          fontWeight: 600,
-          color: theme.palette.secondary.main,
-          borderColor: alpha(theme.palette.secondary.main, 0.45),
-          backgroundColor: alpha(theme.palette.secondary.main, 0.08),
 
-          "& .MuiChip-icon": {
-            color: theme.palette.secondary.main,
-          },
-        })}
-      />*/}
+      <Button
+        variant="contained"
+        color="success"
+        size="small"
+        onClick={onSave}
+        disabled={!hasUnsavedChanges || isSaving}
+      >
+        {isSaving ? "Сохранение..." : "Сохранить"}
+      </Button>
     </Stack>
   );
 };

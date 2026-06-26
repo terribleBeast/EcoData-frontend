@@ -1,17 +1,69 @@
-import { Box, Button, Chip, Paper, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  MenuItem,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { DialogPanel } from "@/shared/components/DialogPanel";
 import { DialogSection } from "@/shared/ui/layout";
 import type { ILeafData } from "./LeavesContainer";
 import { InfoTable, PercentBar } from "./InfoTable";
+import type { IPlantDataFull } from "@/shared/types";
 
 interface LeafFullInfoProps {
   leaf: ILeafData;
+  plants: IPlantDataFull[];
+  leafGenusId: string;
+  onChangePlantDraft: (leafId: string, plantId: string) => void;
 }
+const getPlantId = (plant: IPlantDataFull): string => {
+  return ((plant as any).plant_id ?? (plant as any).id).toString();
+};
+const getPlantGenusId = (plant: IPlantDataFull): string | undefined => {
+  const species = plant.plant_description?.species as any;
+  console.log(species);
+  return (
+    species?.genus_id?.toString() ??
+    species?.genusId?.toString() ??
+    species?.genus?.id?.toString()
+  );
+};
 
-export const LeafFullInfo = ({ leaf }: LeafFullInfoProps) => {
+const getPlantLabel = (plant: IPlantDataFull): string => {
+  const species = plant.plant_description?.species as any;
+
+  const speciesName =
+    species?.russian_name ??
+    species?.latin_name ??
+    species?.name ??
+    "Вид не указан";
+
+  // const plantName = plant.description ?? plant.additional_info ?? plant.id;
+
+  // return `${speciesName} · ${plantName}`;
+  return `${speciesName}`;
+};
+
+export const LeafFullInfo = ({
+  leaf,
+  leafGenusId,
+  onChangePlantDraft,
+  plants,
+}: LeafFullInfoProps) => {
   const sortedPredictions = [...leaf.predictions].sort(
     (a, b) => b.probability - a.probability,
   );
+
+  const availablePlants = plants.filter(
+    (plant) => getPlantGenusId(plant) === leafGenusId,
+  );
+
+  console.log(plants);
+
+  const selectedPlantId = leaf.draftPlantId ?? leaf.plantId ?? "";
 
   return (
     <DialogPanel>
@@ -78,6 +130,41 @@ export const LeafFullInfo = ({ leaf }: LeafFullInfoProps) => {
         <InfoTable
           title="Общая информация"
           rows={[
+            {
+              label: "Растение",
+              value: (
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  value={selectedPlantId}
+                  disabled={availablePlants.length === 0}
+                  onChange={(event) => {
+                    onChangePlantDraft(leaf.leaf_id, event.target.value);
+                  }}
+                  helperText={
+                    availablePlants.length === 0
+                      ? "Нет растений того же рода"
+                      : "Выберите растение того же рода"
+                  }
+                  sx={{ minWidth: 260 }}
+                >
+                  <MenuItem value="" disabled>
+                    Не выбрано
+                  </MenuItem>
+
+                  {availablePlants.map((plant) => {
+                    const plantId = getPlantId(plant);
+
+                    return (
+                      <MenuItem key={plantId} value={plantId}>
+                        {getPlantLabel(plant)}
+                      </MenuItem>
+                    );
+                  })}
+                </TextField>
+              ),
+            },
             {
               label: "Исходное изображение",
               value: leaf.image.name,

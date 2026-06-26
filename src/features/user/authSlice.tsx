@@ -56,6 +56,7 @@ export const authSlice = createSlice({
         console.log("me", payload);
         // Also populate researcher with the same data (it's the combined table)
         state.researcher = {
+          id: payload.researcher_id,
           entity_id: payload.researcher_id,
           researcher_id: payload.researcher_id,
           email: payload.email,

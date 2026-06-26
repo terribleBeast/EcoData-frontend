@@ -181,16 +181,6 @@ export const AnalyzerHeader = ({
           Обработать
         </Button>
 
-        <Button
-          color="success"
-          variant="outlined"
-          startIcon={<Add />}
-          disabled={!canAddToResearch || isResearchesLoading}
-          onClick={openResearchMenu}
-        >
-          Добавить к исследованию
-        </Button>
-
         <Menu
           anchorEl={researchMenuAnchor}
           open={isResearchMenuOpen}

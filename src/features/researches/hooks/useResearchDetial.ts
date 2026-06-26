@@ -40,7 +40,6 @@ export const useResearchDetail = (id?: string) => {
       ),
     );
   }, [researchQuery.data?.researcher_ids]);
-  console.log(researcherIds);
   const researchersByIdsQueryResult = useGetResearchersByIdsQuery(
     researcherIds.length > 0 ? researcherIds : skipToken,
   );
