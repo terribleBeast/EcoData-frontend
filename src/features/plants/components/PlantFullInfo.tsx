@@ -8,9 +8,28 @@ import { QueryErrorState } from "@/shared/ui/states/ErrorState";
 import type { SerializedError } from "@reduxjs/toolkit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type {
+  IGenus,
+  ILocation,
   IPlantDataFull,
-  PlantDescriptionNested,
+  IPlantDescriptionFull,
+  ISpecies,
 } from "@/shared/types/plant";
+import { useGetAllSpeciesQuery, useGetGeneraQuery } from "@/api/endpoints";
+import { useMemo } from "react";
+
+const taxonLabel = (item?: IGenus | ISpecies | null) =>
+  item
+    ? item.russian_name
+      ? `${item.latin_name} (${item.russian_name})`
+      : item.latin_name
+    : "—";
+
+const locationLabel = (location?: ILocation | null) =>
+  location
+    ? location.description ||
+      [location.latitude, location.longitude].filter(Boolean).join(", ") ||
+      location.id
+    : "—";
 
 export const PlantFullInfo = ({
   plant,
@@ -18,39 +37,70 @@ export const PlantFullInfo = ({
 }: {
   plant: IPlantDataFull;
   descriptionQuery: {
-    data?: PlantDescriptionNested | null;
+    data?: IPlantDescriptionFull | null;
     isLoading: boolean;
     isError: boolean;
     error?: FetchBaseQueryError | SerializedError;
   };
 }) => {
-  const desc = descriptionQuery.data ?? plant.plant_description;
+  const { data: allSpecies = [] } = useGetAllSpeciesQuery();
+  const { data: genera = [] } = useGetGeneraQuery();
 
+  const speciesById = useMemo(
+    () => new Map(allSpecies.map((item) => [item.id, item])),
+    [allSpecies],
+  );
+
+  const genusById = useMemo(
+    () => new Map(genera.map((item) => [item.id, item])),
+    [genera],
+  );
+
+  const description = descriptionQuery.data;
+
+  const nestedSpecies = description?.species ?? null;
+
+  const fullSpecies = nestedSpecies?.id
+    ? (speciesById.get(nestedSpecies.id) ?? nestedSpecies)
+    : description?.species_id
+      ? (speciesById.get(description.species_id) ?? null)
+      : null;
+
+  const species = fullSpecies ?? nestedSpecies;
+
+  const genus =
+    description?.genus ??
+    nestedSpecies?.genus ??
+    fullSpecies?.genus ??
+    genusById.get(fullSpecies?.genus_id ?? nestedSpecies?.genus_id ?? "") ??
+    null;
   const chaptersInfo: IChapterData[] = [
     {
       title: "Общая информация",
       fields: [
+        { name: "Род", value: genus ? taxonLabel(genus) : "—" },
+        { name: "Вид", value: species ? taxonLabel(species) : "—" },
         {
-          name: "Вид",
-          value:
-            desc?.species?.latin_name ?? desc?.species?.russian_name ?? "—",
-        },
-        {
-          name: "Тип листа",
-          value: desc?.leaf_blade_type?.name ?? "—",
+          name: "Тип листовой пластинки",
+          value: descriptionQuery.data?.leaf_blade_type?.name ?? "—",
         },
         {
           name: "Жизненная форма",
-          value: desc?.plant_life_form?.name ?? "—",
+          value: descriptionQuery.data?.plant_life_form?.name ?? "—",
         },
+        { name: "Локация", value: locationLabel(plant.location) },
       ],
     },
     {
       title: "Описание",
       fields: [
         {
-          name: "Описание",
-          value: desc?.description ?? plant.description ?? "—",
+          name: "Описание растения",
+          value: descriptionQuery.data?.description ?? "—",
+        },
+        {
+          name: "Дополнительная информация",
+          value: plant.description ?? "—",
         },
       ],
     },

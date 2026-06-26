@@ -2,23 +2,12 @@ export type { IClassifier } from "./classifier";
 export { classifiers } from "./classifier";
 export type { IChapterData, IChapterField } from "./chapter";
 export type {
-  IPlantData,
   IPlantDataFull,
-  PlantCreate,
-  PlantUpdate,
   IGenus,
   ISpecies,
   ILeafType,
   ILifeForm,
-  IPlantDescription,
   IPlantDescriptionFull,
-  PlantDescriptionCreate,
-  PlantDescriptionUpdate,
-  SpeciesNested,
-  PlantLifeFormNested,
-  LeafBladeTypeNested,
-  PlantDescriptionNested,
-  LocationNested,
 } from "./plant";
 export type {
   ILabData,
@@ -33,9 +22,6 @@ export type {
   IResearchData,
   IResearchDataFull,
   ResearchStatus,
-  ResearchCreate,
-  ResearchUpdate,
-  ResearchAssignResearchers,
 } from "./research";
 export type {
   IResearcherData,
@@ -67,7 +53,7 @@ export type {
   DistrictNested,
   SettlementTypeNested,
   SettlementNested,
-  LocationNested as LocationNestedFromLocation,
+  LocationNested,
   CountryResponse,
   RegionResponse,
   DistrictResponse,

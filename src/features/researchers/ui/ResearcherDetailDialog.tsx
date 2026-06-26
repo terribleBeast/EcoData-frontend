@@ -15,8 +15,7 @@ const ResearcherDetailDialog = () => {
     useDetailDialog(id);
 
   const dialogType: DetailDialogModeType = getDialogType(pathname);
-  const { researcherQuery, researchesQuery } = useResearcherDetail(id ?? "");
-
+  const { researcherQuery, researchesQuery } = useResearcherDetail(id);
   return (
     <GenericEntityDetailDialog<IResearcherDataFull>
       mode={dialogType}

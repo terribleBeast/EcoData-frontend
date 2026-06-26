@@ -36,22 +36,20 @@ export const ResearchMultiSelect = <T extends FieldValues>({
     Array.isArray(value) ? (value as string[]) : [],
   );
 
-  const selected = researches.filter((r) => selectedIds.has(r.research_id));
+  const selected = researches.filter((r) => selectedIds.has(r.id));
 
   return (
     <Autocomplete<IResearchData, true>
       multiple
       options={researches}
       getOptionLabel={(option) => option.title}
-      getOptionKey={(option) => option.research_id}
-      getOptionDisabled={(option) => selectedIds.has(option.research_id)}
+      getOptionKey={(option) => option.id}
+      getOptionDisabled={(option) => selectedIds.has(option.id)}
       value={selected}
       loading={isLoading}
       disabled={disabled}
-      isOptionEqualToValue={(option, val) =>
-        option.research_id === val.research_id
-      }
-      onChange={(_, newValue) => onChange(newValue.map((r) => r.research_id))}
+      isOptionEqualToValue={(option, val) => option.id === val.id}
+      onChange={(_, newValue) => onChange(newValue.map((r) => r.id))}
       renderInput={(params) => (
         <TextField
           {...params}

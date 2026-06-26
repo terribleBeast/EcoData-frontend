@@ -1,30 +1,87 @@
-import type { IResearchDataFull } from "@/shared/types/research";
-import { useForm, Controller } from "react-hook-form";
-import { FormTextField } from "@/shared/components/formFields";
-import FormPage from "@/shared/components/FormPage";
-import type { ICommonFieldProps, IFormProps } from "@/shared/types/form";
-import type { IResearcherData } from "@/shared/types/researcher";
-import { EntityForm } from "@/shared/ui/EntityForm";
+import { useMemo } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   FormControl,
+  FormHelperText,
   InputLabel,
   MenuItem,
   Select,
   TextField,
 } from "@mui/material";
-import { ResearchStatus } from "@/shared/types/research";
+
+import { FormTextField } from "@/shared/components/formFields";
+import FormPage from "@/shared/components/FormPage";
+import type { ICommonFieldProps, IFormProps } from "@/shared/types/form";
+import type { IResearcherData } from "@/shared/types/researcher";
+import {
+  ResearchStatus,
+  type IResearchDataFull,
+} from "@/shared/types/research";
+import { EntityForm } from "@/shared/ui/EntityForm";
 import { ResearcherMultiSelect } from "../components";
 
-/** Form shape — extends the full research DTO with researcher_ids used by the multiselect. */
-type ResearchFormData = IResearchDataFull & { researcher_ids?: string[] };
+type UUID = string;
 
-interface IResearchFormProps extends IFormProps<IResearchDataFull> {
+type ResearcherIdLike =
+  | UUID
+  | {
+      id?: UUID;
+      researcher_id?: UUID;
+    }
+  | null
+  | undefined;
+
+type ResearchFormData = Omit<IResearchDataFull, "researcher_ids"> & {
+  researcher_ids?: UUID[];
+};
+
+interface IResearchFormProps extends Omit<
+  IFormProps<ResearchFormData>,
+  "initialData"
+> {
   title: string;
   submitLabel: string;
   submitLoadingLabel: string;
   researchers: IResearcherData[];
   initialData?: IResearchDataFull;
 }
+const getResearcherId = (value: ResearcherIdLike): UUID | null => {
+  if (!value) return null;
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return value.id ?? value.researcher_id ?? null;
+};
+
+const normalizeDateValue = (value?: string | null): string => {
+  if (!value) return "";
+
+  return value.slice(0, 10);
+};
+
+const buildDefaultValues = (
+  initialData?: IResearchDataFull,
+): Partial<ResearchFormData> => {
+  const researcherIds = (initialData?.researcher_ids ?? [])
+    .map(getResearcherId)
+    .filter((item): item is UUID => Boolean(item));
+
+  return {
+    ...initialData,
+
+    title: initialData?.title ?? "",
+    goal: initialData?.goal ?? "",
+    description: initialData?.description ?? "",
+
+    start_date: normalizeDateValue(initialData?.start_date),
+    end_date: normalizeDateValue(initialData?.end_date),
+
+    status: initialData?.status ?? ResearchStatus.ACTIVE,
+    researcher_ids: researcherIds,
+  };
+};
 
 export const ResearchForm = ({
   initialData,
@@ -35,22 +92,40 @@ export const ResearchForm = ({
   endpointState,
   researchers,
 }: IResearchFormProps) => {
+  const defaultValues = useMemo(
+    () => buildDefaultValues(initialData),
+    [initialData],
+  );
+
   const {
     register,
-    control,
     handleSubmit,
+    control,
+    getValues,
     formState: { errors: formErrors },
   } = useForm<ResearchFormData>({
     mode: "onBlur",
     reValidateMode: "onSubmit",
-    defaultValues: initialData ?? {
-      status: ResearchStatus.ACTIVE,
-    },
+    defaultValues,
   });
+
   const commonFieldProps: ICommonFieldProps<ResearchFormData> = {
     isLoading: endpointState.isLoading,
     errors: formErrors,
-    register: register,
+    register,
+  };
+
+  const handleFormSubmit = (data: ResearchFormData) => {
+    onSubmit({
+      ...data,
+      title: data.title?.trim(),
+      goal: data.goal?.trim() || null,
+      description: data.description?.trim() || null,
+      start_date: data.start_date || null,
+      end_date: data.end_date || null,
+      status: data.status ?? ResearchStatus.ACTIVE,
+      researcher_ids: data.researcher_ids ?? [],
+    });
   };
 
   return (
@@ -60,7 +135,7 @@ export const ResearchForm = ({
         submitLabel={submitLabel}
         submitLoadingLabel={submitLoadingLabel}
         endpointState={endpointState}
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(handleFormSubmit)}
       >
         <FormTextField<ResearchFormData>
           {...commonFieldProps}
@@ -74,6 +149,12 @@ export const ResearchForm = ({
           name="goal"
           label="Цель"
           rules={{ required: "Цель обязательна" }}
+        />
+
+        <FormTextField<ResearchFormData>
+          {...commonFieldProps}
+          name="description"
+          label="Описание"
         />
 
         <TextField
@@ -99,23 +180,45 @@ export const ResearchForm = ({
           slotProps={{ inputLabel: { shrink: true } }}
           {...register("end_date", {
             required: "Дата окончания обязательна",
+            validate: (endDate) => {
+              const startDate = getValues("start_date");
+
+              if (!startDate || !endDate) return true;
+
+              return (
+                startDate <= endDate ||
+                "Дата окончания не может быть раньше даты начала"
+              );
+            },
           })}
         />
 
         <Controller
           control={control}
           name="status"
-          rules={{ required: true }}
+          rules={{ required: "Статус обязателен" }}
           render={({ field, fieldState: { error } }) => (
-            <FormControl fullWidth error={!!error}>
+            <FormControl
+              fullWidth
+              error={!!error}
+              disabled={endpointState.isLoading}
+            >
               <InputLabel>Статус</InputLabel>
-              <Select {...field} label="Статус">
+              <Select
+                {...field}
+                value={field.value ?? ResearchStatus.ACTIVE}
+                label="Статус"
+              >
                 {Object.values(ResearchStatus).map((status) => (
                   <MenuItem key={status} value={status}>
                     {status}
                   </MenuItem>
                 ))}
               </Select>
+
+              {error?.message && (
+                <FormHelperText>{error.message}</FormHelperText>
+              )}
             </FormControl>
           )}
         />

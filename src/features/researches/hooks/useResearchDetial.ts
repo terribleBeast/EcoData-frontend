@@ -5,21 +5,69 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useMemo } from "react";
 
-export const useResearchDetail = (id: string) => {
-  const researchQuery = useGetResearchByIdQuery(id, { skip: !id });
+type UUID = string;
 
-  const hasIds = researchQuery.data?.researcher_ids?.length;
+type ResearcherIdLike =
+  | UUID
+  | {
+      id?: UUID;
+      researcher_id?: UUID;
+    }
+  | null
+  | undefined;
 
-  const byIdsResult = useGetResearchersByIdsQuery(
-    hasIds ? researchQuery.data!.researcher_ids! : skipToken,
+const getResearcherId = (value: ResearcherIdLike): UUID | null => {
+  if (!value) return null;
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return value.id ?? value.researcher_id ?? null;
+};
+
+export const useResearchDetail = (id?: string) => {
+  const researchQuery = useGetResearchByIdQuery(id ? id : skipToken);
+
+  const researcherIds = useMemo(() => {
+    const rawIds = researchQuery.data?.researcher_ids ?? [];
+
+    return Array.from(
+      new Set(
+        rawIds
+          .map(getResearcherId)
+          .filter((item): item is UUID => Boolean(item)),
+      ),
+    );
+  }, [researchQuery.data?.researcher_ids]);
+
+  const researchersByIdsQueryResult = useGetResearchersByIdsQuery(
+    researcherIds.length > 0 ? researcherIds : skipToken,
   );
 
-  const researchersByIdsQuery = {
-    data: byIdsResult.data ?? [],
-    isLoading: byIdsResult.isLoading ?? false,
-    isError: byIdsResult.isError ?? false,
-    error: byIdsResult.error,
-  };
+  const researchersByIdsQuery = useMemo(
+    () => ({
+      data: researchersByIdsQueryResult.data ?? [],
+      isLoading:
+        researchQuery.isLoading ||
+        researchQuery.isFetching ||
+        researchersByIdsQueryResult.isLoading ||
+        researchersByIdsQueryResult.isFetching,
+      isError: researchQuery.isError || researchersByIdsQueryResult.isError,
+      error: researchQuery.error ?? researchersByIdsQueryResult.error,
+    }),
+    [
+      researchersByIdsQueryResult.data,
+      researchersByIdsQueryResult.isLoading,
+      researchersByIdsQueryResult.isFetching,
+      researchersByIdsQueryResult.isError,
+      researchersByIdsQueryResult.error,
+      researchQuery.isLoading,
+      researchQuery.isFetching,
+      researchQuery.isError,
+      researchQuery.error,
+    ],
+  );
 
   const predictionQuery = useMemo(
     () => ({
@@ -35,5 +83,6 @@ export const useResearchDetail = (id: string) => {
     researchQuery,
     researchersByIdsQuery,
     predictionQuery,
+    researcherIds,
   };
 };

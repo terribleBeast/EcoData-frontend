@@ -38,13 +38,8 @@ const AnalyzerPage = () => {
     //   leaves,
     // });
   };
-  const {
-    selectedGenus,
-    classifiers,
-    generaQuery,
-    availableSpeciesQuery,
-    handleSelectGenera,
-  } = useClassifiers();
+  const { selectedGenus, classifiers, generaQuery, handleSelectGenera } =
+    useClassifiers();
 
   const {
     selectedImage,
@@ -56,8 +51,6 @@ const AnalyzerPage = () => {
     handleProcessImages,
     handleDeleteLeaves,
     leaves,
-    isProcessing,
-    progress,
     closeLeafFullInfo,
     openLeafFullInfo,
     selectedLeaf,
@@ -85,7 +78,6 @@ const AnalyzerPage = () => {
         selectedGenus={selectedGenus}
         classifiers={classifiers}
         generaQuery={generaQuery}
-        availableSpeciesQuery={availableSpeciesQuery}
         handleSelectGenera={handleSelectGenera}
       />
 

@@ -10,6 +10,10 @@ import { mutationState, queryState } from "./utils";
  * Captures the shape of an RTK Query mutation hook returned by
  * `apiSlice.useXxxMutation()` without depending on internal RTKQ types.
  */
+
+// Then replace id: number / get(id: number) / remove(id: number)
+// with EntityId in the rest of this file.
+
 type MutationHook<TArg, TResult = unknown> = () => readonly [
   (arg: TArg) => Promise<TResult>,
   {
@@ -52,10 +56,11 @@ export interface CrudState {
 }
 
 /** Any entity that represents a DB row must expose its PK via entity_id */
-export interface EntityWithId {
-  entity_id: string;
-}
+export type EntityId = string | number;
 
+export interface EntityWithId {
+  id: EntityId;
+}
 /** Uniform CRUD API returned by the hook */
 export interface EntityCRUD<
   TEntity extends EntityWithId,

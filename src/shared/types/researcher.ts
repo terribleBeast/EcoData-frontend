@@ -28,6 +28,7 @@ export interface IResearcherData {
 
 /** Full researcher detail (matches ResearcherResponse) */
 export interface IResearcherDataFull extends IResearcherData {
+  id?: string;
   entity_id: string; // PK alias
   email: string;
   patronymic?: string | null;

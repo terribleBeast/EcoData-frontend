@@ -2,9 +2,11 @@ import {
   useGetGeneraQuery,
   useGetLeafTypesQuery,
   useGetLifeFormsQuery,
+  useGetPlantLocationsQuery,
 } from "@/api/endpoints";
+import type { IPlantFormData } from "@/shared/types/plant";
+
 import { useSuccessNavigation } from "@/shared/hooks/useFormCallback";
-import type { IPlantDataFull, PlantCreate } from "@/shared/types/plant";
 import { useNavigate } from "react-router";
 import { usePlantsCrud } from "./usePlantsState";
 
@@ -18,30 +20,28 @@ export const useDetailDialog = () => {
   const { data: genera = [] } = useGetGeneraQuery();
   const { data: leafTypes = [] } = useGetLeafTypesQuery();
   const { data: lifeForms = [] } = useGetLifeFormsQuery();
+  const { data: locations = [] } = useGetPlantLocationsQuery();
 
-  const handleCreatePlant = async (data: IPlantDataFull) => {
+  const handleCreatePlant = async (data: IPlantFormData) => {
     try {
-      const payload: PlantCreate = {
-        description: data.description,
-      };
-      await create(payload);
+      await create(data);
       onSuccess();
     } catch {
       // FormTemplate shows the error via endpointState.isError
     }
   };
-  const handleEditPlant = async (data: IPlantDataFull) => {
+
+  const handleEditPlant = async (data: IPlantFormData) => {
     try {
-      const payload: PlantCreate = {
-        description: data.description,
-      };
-      await update({ ...payload, entity_id: data.entity_id });
+      await update(data as IPlantFormData & { id: string });
       onSuccess();
     } catch {
       // FormTemplate shows the error via endpointState.isError
     }
   };
+
   return {
+    locations,
     genera,
     leafTypes,
     lifeForms,

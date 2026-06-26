@@ -1,4 +1,4 @@
-import { Box, Chip, CircularProgress, Stack, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import { PageChapter } from "@/shared/ui/layout";
 import { type IGenus } from "@/shared/types";
 import { ClassifierDropdown } from "./ClassifierDropdown";
@@ -10,9 +10,6 @@ type Props = {
   selectedGenus: IGenus | undefined;
   handleSelectGenera: (item: IGenus | null) => void | Promise<void>;
   generaQuery: ReturnType<typeof useClassifiers>["generaQuery"];
-  availableSpeciesQuery: ReturnType<
-    typeof useClassifiers
-  >["availableSpeciesQuery"];
   classifiers: ReturnType<typeof useClassifiers>["classifiers"];
 };
 
@@ -20,7 +17,6 @@ export const ClassifiersChapter = ({
   selectedGenus,
   handleSelectGenera,
   generaQuery,
-  availableSpeciesQuery,
   classifiers,
 }: Props) => {
   const orderedClassifiers = useMemo(() => {
@@ -80,7 +76,7 @@ export const ClassifiersChapter = ({
             {selectedGenus !== undefined ? (
               orderedClassifiers.map((item) => (
                 <Chip
-                  key={item.id ?? item.species_id ?? item.latin_name}
+                  key={item.id ?? item.latin_name}
                   label={item.russian_name}
                   sx={{
                     height: 44,

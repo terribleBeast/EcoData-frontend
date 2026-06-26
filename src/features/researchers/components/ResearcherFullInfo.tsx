@@ -19,6 +19,7 @@ export const ResearcherFullInfo = ({
     isError: boolean;
   };
 }) => {
+  console.log(researcher);
   const chaptersInfo: IChapterData[] = [
     {
       title: "Общая информация",

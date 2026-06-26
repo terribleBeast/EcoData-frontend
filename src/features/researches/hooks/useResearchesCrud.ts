@@ -2,7 +2,7 @@ import { useEntityCRUD } from "@/shared/hooks/useEntityCRUD";
 import {
   useCreateResearchMutation,
   useDeleteResearchMutation,
-  useUpdateResearchMutation,
+  useEditResearchMutation,
   useLazyGetResearchByIdQuery,
   useGetResearchesQuery,
 } from "@/api/endpoints";
@@ -12,7 +12,7 @@ export const useResearchesCrud = () => {
     useGetResearchesQuery,
     useLazyGetResearchByIdQuery,
     useCreateResearchMutation,
-    useUpdateResearchMutation,
+    useEditResearchMutation,
     useDeleteResearchMutation,
     undefined,
   );

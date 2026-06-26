@@ -13,10 +13,6 @@ import {
 import { useLeavesState } from "./useLeavesState";
 import type { ILeafData } from "../components/LeavesContainer";
 
-type GenusLike = {
-  id?: string;
-  genus_id?: string;
-};
 export function useAnalyzerPage() {
   const dispatch = useDispatch();
   const [selectedLeaf, setSelectedLeaf] = useState<ILeafData | null>(null);
@@ -40,18 +36,13 @@ export function useAnalyzerPage() {
   const closeImageFullInfo = useCallback(() => {
     setSelectedImage(null);
   }, []);
-  const {
-    getImageFile,
-    addImages,
-    deleteImage,
-    updateImageStatus,
-    replaceImages,
-  } = useImageState();
+  const { getImageFile, addImages, deleteImage, updateImageStatus } =
+    useImageState();
 
-  const { processImagesWs, closeSession, progress, isProcessing } =
+  const { processImagesWs, progress, isProcessing } =
     usePredictionWsSession(getImageFile);
 
-  const selectedGenusId = selectedGenus?.id ?? selectedGenus?.genus_id;
+  const selectedGenusId = selectedGenus?.id;
 
   const handleProcessImages = useCallback(async () => {
     if (!selectedGenusId) return;

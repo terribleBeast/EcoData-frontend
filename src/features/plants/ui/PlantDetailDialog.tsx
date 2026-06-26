@@ -15,13 +15,13 @@ const PlantDetailDialog = () => {
     leafTypes,
     lifeForms,
     mutationsState,
+    locations,
   } = useDetailDialog();
 
-  const { pathname } = useLocation();
   const { id } = useParams<{ id: string }>();
-
+  const { plantQuery, descriptionQuery } = usePlantDetail(id);
+  const { pathname } = useLocation();
   const dialogType: DetailDialogModeType = getDialogType(pathname);
-  const { plantQuery, descriptionQuery } = usePlantDetail(id ?? "-1");
 
   return (
     <GenericEntityDetailDialog<IPlantDataFull>
@@ -38,6 +38,7 @@ const PlantDetailDialog = () => {
       )}
       renderCreate={() => (
         <PlantForm
+          locations={locations}
           onSubmit={handleCreatePlant}
           endpointState={{
             ...mutationsState.create,
@@ -53,6 +54,7 @@ const PlantDetailDialog = () => {
       )}
       renderEdit={(detail) => (
         <PlantForm
+          locations={locations}
           onSubmit={handleEditPlant}
           genera={genera}
           leafTypes={leafTypes}

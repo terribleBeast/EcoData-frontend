@@ -1,15 +1,16 @@
-import { useGetPlantByIdQuery } from "@/api/endpoints";
+import { skipToken } from "@reduxjs/toolkit/query";
 
-export const usePlantDetail = (id: string) => {
-  const plantQuery = useGetPlantByIdQuery(id, { skip: id === "-1" });
+import {
+  useGetPlantByIdQuery,
+  useGetPlantDescriptionQuery,
+} from "@/api/endpoints";
 
-  const plant = plantQuery.data;
-  const descriptionQuery = {
-    data: plant?.plant_description ?? undefined,
-    isLoading: false,
-    isError: false,
-    error: undefined,
-  };
+export const usePlantDetail = (id?: string) => {
+  const plantQuery = useGetPlantByIdQuery(id ?? skipToken);
+
+  const descriptionQuery = useGetPlantDescriptionQuery(
+    plantQuery.data?.plant_description_id ?? skipToken,
+  );
 
   return { plantQuery, descriptionQuery };
 };
