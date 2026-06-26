@@ -19,7 +19,7 @@ const ResearchDetailDialog = () => {
 
   const { pathname } = useLocation();
   const { id } = useParams<{ id: string }>();
-
+  console.log(id);
   const dialogType: DetailDialogModeType = getDialogType(pathname);
   const { researchQuery, researchersByIdsQuery, predictionQuery } =
     useResearchDetail(id ?? "");
@@ -32,7 +32,7 @@ const ResearchDetailDialog = () => {
     if (!id || !currentResearcher) return;
     await invite({
       research_id: id,
-      body: { researcher_ids: [currentResearcher.researcher_id] },
+      body: { researcher_ids: [currentResearcher.id] },
     });
     researchQuery.refetch();
   };
@@ -41,7 +41,7 @@ const ResearchDetailDialog = () => {
     if (!id || !currentResearcher) return;
     await separate({
       research_id: id,
-      body: { researcher_ids: [currentResearcher.researcher_id] },
+      body: { researcher_ids: [currentResearcher.id] },
     });
     researchQuery.refetch();
   };

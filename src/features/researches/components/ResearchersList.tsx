@@ -42,9 +42,9 @@ export const ResearchersList = ({
     <List>
       {researchersQuery.data.map((researcher, index) => (
         <ListItemButton
-          key={researcher.researcher_id}
+          key={researcher.id}
           component={RouterLink}
-          to={`/researchers/${researcher.researcher_id}`}
+          to={`/researchers/${researcher.id}`}
         >
           <Typography>
             {index + 1}. {researcher.last_name} {researcher.first_name[0]}.

@@ -10,12 +10,14 @@ import type { IResearcherDataFull } from "@/shared/types/researcher";
 const ResearcherDetailDialog = () => {
   const { pathname } = useLocation();
   const { id } = useParams<{ id: string }>();
-
+  console.log(id);
   const { handleCreateResearcher, handleEditResearcher, mutationsState } =
     useDetailDialog(id);
 
   const dialogType: DetailDialogModeType = getDialogType(pathname);
   const { researcherQuery, researchesQuery } = useResearcherDetail(id);
+  console.log(researcherQuery.data);
+
   return (
     <GenericEntityDetailDialog<IResearcherDataFull>
       mode={dialogType}

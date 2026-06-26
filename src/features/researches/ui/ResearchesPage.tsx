@@ -88,7 +88,7 @@ const ResearchesPage = () => {
         columns={researchColumns}
         data={researches}
         isLoading={queriesState.list.isLoading}
-        onRowClick={(row) => navigate(`/researches/${row.id}`)}
+        onRowClick={(row) => navigate(`/researches/${row.research_id}`)}
         meta={{
           onEdit: (research: IResearchDataFull) => {
             console.log(research);

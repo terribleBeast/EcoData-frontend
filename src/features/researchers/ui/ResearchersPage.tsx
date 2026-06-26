@@ -68,7 +68,7 @@ const researcherColumns: MRT_ColumnDef<IResearcherDataFull>[] = [
             aria-label="Удалить"
             onClick={(e) => {
               e.stopPropagation();
-              meta?.onDelete(row.original.researcher_id);
+              meta?.onDelete(row.original.id);
             }}
           >
             <Delete color="error" />
@@ -93,10 +93,10 @@ const ResearchersPage = () => {
         columns={researcherColumns}
         data={researchers}
         isLoading={queriesState.list.isLoading}
-        onRowClick={(row) => navigate(`/researchers/${row.researcher_id}`)}
+        onRowClick={(row) => navigate(`/researchers/${row.id}`)}
         meta={{
           onEdit: (researcher: IResearcherDataFull) =>
-            navigate(`/researchers/${researcher.researcher_id}/edit`),
+            navigate(`/researchers/${researcher.id}/edit`),
           onDelete: (researcher_id: string) => {
             remove(researcher_id);
           },

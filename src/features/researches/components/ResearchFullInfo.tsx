@@ -40,11 +40,10 @@ export const ResearchFullInfo = ({
 }) => {
   const currentResearcher = useSelector(selectResearcher);
 
+  console.log(currentResearcher, researchersQuery);
   const isParticipant =
     currentResearcher &&
-    researchersQuery?.data?.some(
-      (r) => r.researcher_id === currentResearcher.researcher_id,
-    );
+    researchersQuery?.data?.some((r) => r.id === currentResearcher.id);
 
   const chaptersInfo: IChapterData[] = [
     {
