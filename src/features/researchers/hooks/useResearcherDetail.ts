@@ -1,60 +1,50 @@
-import { skipToken } from "@reduxjs/toolkit/query";
-
 import {
   useGetResearcherByIdQuery,
   useGetResearchesQuery,
 } from "@/api/endpoints";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useMemo } from "react";
 
-import type { IResearchData } from "@/shared/types/research";
+type UUID = string;
 
-const getResearcherId = (value: unknown): string | null => {
+type ResearcherIdLike =
+  | UUID
+  | {
+      id?: UUID;
+      researcher_id?: UUID;
+    }
+  | null
+  | undefined;
+
+const getResearcherId = (value: ResearcherIdLike): UUID | null => {
   if (!value) return null;
 
   if (typeof value === "string") {
     return value;
   }
 
-  if (typeof value === "object") {
-    const item = value as Record<string, unknown>;
-
-    return (
-      (item.id as string | undefined) ??
-      (item.researcher_id as string | undefined) ??
-      null
-    );
-  }
-
-  return null;
+  return value.id ?? value.researcher_id ?? null;
 };
 
-const researchHasResearcher = (
-  research: IResearchData,
-  researcherId?: string,
-): boolean => {
-  if (!researcherId) return false;
-
-  const rawResearcherIds =
-    research.researcher_ids ?? research.researchers_id ?? [];
-
-  const participantIds = rawResearcherIds.map(getResearcherId).filter(Boolean);
-
-  const createdById =
-    research.created_by_researcher_id ?? getResearcherId(research.created_by);
-
-  return participantIds.includes(researcherId) || createdById === researcherId;
-};
-
-export const useResearcherDetail = (id?: string) => {
+export const useResearcherDetail = (id?: UUID) => {
   const researcherQuery = useGetResearcherByIdQuery(id ?? skipToken);
-  const allResearchesQuery = useGetResearchesQuery();
+  const researchesQueryRaw = useGetResearchesQuery();
+
+  const researches = useMemo(() => {
+    if (!id) return [];
+
+    return (researchesQueryRaw.data ?? []).filter((research) => {
+      const researcherIds = research.researcher_ids ?? [];
+
+      return researcherIds.map(getResearcherId).filter(Boolean).includes(id);
+    });
+  }, [researchesQueryRaw.data, id]);
 
   const researchesQuery = {
-    data: allResearchesQuery.data?.filter((research) =>
-      researchHasResearcher(research, id),
-    ),
-    isLoading: allResearchesQuery.isLoading,
-    isError: allResearchesQuery.isError,
-    error: allResearchesQuery.error,
+    data: researches,
+    isLoading: researchesQueryRaw.isLoading || researchesQueryRaw.isFetching,
+    isError: researchesQueryRaw.isError,
+    error: researchesQueryRaw.error,
   };
 
   return {

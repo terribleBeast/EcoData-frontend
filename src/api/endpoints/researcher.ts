@@ -15,9 +15,9 @@ export const researcherEndpoints = apiSlice.injectEndpoints({
       query: (id) => `/researchers/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Researchers", id }],
     }),
-    getResearchersByIds: builder.query<IResearcherData[], string[]>({
+    getResearchersByIds: builder.query<IResearcherData[], IResearcherData[]>({
       query: (items) => {
-        const req = `/researchers?${items.map((item) => `ids=${item}`).join("&")}`;
+        const req = `/researchers?${items.map((item) => `ids=${item.researcher_id}`).join("&")}`;
         console.log(req);
         return req;
       },

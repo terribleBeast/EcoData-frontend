@@ -27,7 +27,6 @@ export type {
   IResearcherData,
   IResearcherDataFull,
   ResearcherCreate,
-  ResearcherUpdate,
 } from "./researcher";
 export type {
   RegisterRequest,
