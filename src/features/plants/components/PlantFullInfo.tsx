@@ -16,6 +16,7 @@ import type {
 } from "@/shared/types/plant";
 import { useGetAllSpeciesQuery, useGetGeneraQuery } from "@/api/endpoints";
 import { useMemo } from "react";
+import { PlantLeavesList } from "./PlantLeavesList";
 
 const taxonLabel = (item?: IGenus | ISpecies | null) =>
   item
@@ -116,7 +117,12 @@ export const PlantFullInfo = ({
 
   return (
     <DialogPanel>
-      <DialogSection title="Информация о растении" width="100%">
+      <DialogSection title="Листья растения" width="70%">
+        <Card sx={{ overflowY: "auto", overflowX: "auto", maxHeight: "60vh" }}>
+          <PlantLeavesList leaves={plant.leaves ?? []} />
+        </Card>
+      </DialogSection>
+      <DialogSection title="Информация о растении" width="30%">
         <Card sx={{ padding: "1rem" }}>
           <ChapterInfoTemplate chaptersInfo={chaptersInfo} />
         </Card>

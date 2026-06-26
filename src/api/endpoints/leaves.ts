@@ -1,21 +1,34 @@
 import { apiSlice } from "../apiSlice";
 
-export type LeafPlantAssignment = {
-  leaf_id: string;
+export type LeafSaveItem = {
+  client_leaf_id?: string;
+  leaf_id?: string;
   plant_id: string;
+  genus_id: string;
+  image_id?: string | null;
+  leaf_index?: number | null;
+  side_of_the_world_id?: string | null;
+  location_on_plant_id?: string | null;
+};
+
+export type LeafSaveResponse = {
+  leaves: {
+    client_leaf_id?: string | null;
+    leaf_id: string;
+  }[];
 };
 
 export const leavesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    assignLeavesToPlants: builder.mutation<void, LeafPlantAssignment[]>({
-      query: (assignments) => ({
-        url: "/leaves/plant",
+    saveLeaves: builder.mutation<LeafSaveResponse, LeafSaveItem[]>({
+      query: (leaves) => ({
+        url: "/leaves/save",
         method: "PUT",
-        body: { assignments },
+        body: { leaves },
       }),
-      invalidatesTags: ["Leaves"],
+      invalidatesTags: ["Leaves", "Plants"],
     }),
   }),
 });
 
-export const { useAssignLeavesToPlantsMutation } = leavesApi;
+export const { useSaveLeavesMutation } = leavesApi;

@@ -1,4 +1,7 @@
 import { Dialog } from "@mui/material";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+
 import { useAnalyzerPage } from "../hooks/useAnalyzerPage";
 import {
   ImageFullInfo,
@@ -8,16 +11,54 @@ import {
 import { PageChapter } from "@/shared/ui/layout/PageChapter";
 import { AnalyzerHeader } from "./AnalyzerHeader";
 import { useClassifiers } from "../hooks/useClassifiers";
-import { useSelector } from "react-redux";
 import { selectImages, selectImagesCount } from "../analyzerSlice";
-import { LeavesContainer } from "../components/LeavesContainer";
+import { LeavesContainer, type ILeafData } from "../components/LeavesContainer";
 import LeafFullInfo from "../components/LeafFullInfo";
 import { LeavesHeader } from "./LeavesHeader";
 import { useGetPlantsQuery, useGetResearchesQuery } from "@/api/endpoints";
-import { useAssignLeavesToPlantsMutation } from "@/api/endpoints/leaves";
-import { useState } from "react";
+import { useSaveLeavesMutation } from "@/api/endpoints/leaves";
+
+const normalize = (value?: string | null) => value?.trim().toLowerCase() ?? "";
+
+const getLeafId = (leaf: ILeafData): string | undefined => {
+  return ((leaf as any).leaf_id ?? (leaf as any).id)?.toString();
+};
+
+const getLeafPlantId = (leaf: ILeafData): string | undefined => {
+  return ((leaf as any).plant_id ?? (leaf as any).plantId)?.toString();
+};
+
+const getPlantId = (plant: any): string | undefined => {
+  return (plant?.plant_id ?? plant?.id)?.toString();
+};
+
+const getPlantSpeciesNames = (plant: any): string[] => {
+  const species = plant?.plant_description?.species;
+
+  return [species?.latin_name, species?.russian_name, species?.name].filter(
+    Boolean,
+  );
+};
 
 const AnalyzerPage = () => {
+  const images = useSelector(selectImages);
+  const imagesCount = useSelector(selectImagesCount);
+
+  const [leafPlantDrafts, setLeafPlantDrafts] = useState<
+    Record<string, string>
+  >({});
+
+  const [savedLeafPlantIds, setSavedLeafPlantIds] = useState<
+    Record<string, string>
+  >({});
+
+  const researchesQuery = useGetResearchesQuery();
+  const plantsQuery = useGetPlantsQuery();
+  const [saveLeaves, saveLeavesState] = useSaveLeavesMutation();
+
+  const { selectedGenus, classifiers, generaQuery, handleSelectGenera } =
+    useClassifiers();
+
   const {
     selectedImage,
     addImages,
@@ -32,12 +73,33 @@ const AnalyzerPage = () => {
     openLeafFullInfo,
     selectedLeaf,
   } = useAnalyzerPage();
-  const images = useSelector(selectImages);
-  const [leafPlantDrafts, setLeafPlantDrafts] = useState<
-    Record<string, string>
-  >({});
-  const [assignLeavesToPlants, assignState] = useAssignLeavesToPlantsMutation();
-  const plantsQuery = useGetPlantsQuery();
+
+  const findPredictedPlantIdForLeaf = (leaf: ILeafData): string | undefined => {
+    const predictedClassifier = leaf.bestPrediction?.classifier;
+
+    const predictedPlant = (plantsQuery.data ?? []).find((plant) =>
+      getPlantSpeciesNames(plant).some(
+        (name) => normalize(name) === normalize(predictedClassifier),
+      ),
+    );
+
+    return predictedPlant ? getPlantId(predictedPlant) : undefined;
+  };
+
+  const getSelectedPlantIdForLeaf = (leaf: ILeafData): string | undefined => {
+    const leafId = getLeafId(leaf);
+
+    if (!leafId) {
+      return undefined;
+    }
+
+    return (
+      leafPlantDrafts[leafId] ??
+      getLeafPlantId(leaf) ??
+      savedLeafPlantIds[leafId] ??
+      findPredictedPlantIdForLeaf(leaf)
+    );
+  };
 
   const handleChangeLeafPlantDraft = (leafId: string, plantId: string) => {
     setLeafPlantDrafts((prev) => ({
@@ -47,33 +109,79 @@ const AnalyzerPage = () => {
   };
 
   const hasUnsavedLeafAssignments = leaves.some((leaf) => {
-    const draftPlantId = leafPlantDrafts[leaf.leaf_id];
+    const leafId = getLeafId(leaf);
 
-    return Boolean(draftPlantId && draftPlantId !== leaf.plantId);
+    if (!leafId) {
+      return false;
+    }
+
+    const currentPlantId = getLeafPlantId(leaf) ?? savedLeafPlantIds[leafId];
+    const selectedPlantId = getSelectedPlantIdForLeaf(leaf);
+
+    return Boolean(selectedPlantId && selectedPlantId !== currentPlantId);
   });
 
   const handleSaveLeaves = async () => {
-    const assignments = leaves
-      .filter((leaf) => {
-        const draftPlantId = leafPlantDrafts[leaf.leaf_id];
-
-        return Boolean(draftPlantId && draftPlantId !== leaf.plantId);
-      })
-      .map((leaf) => ({
-        leaf_id: leaf.leaf_id,
-        plant_id: leafPlantDrafts[leaf.leaf_id],
-      }));
-
-    if (!assignments.length) {
+    if (!selectedGenus?.id) {
+      console.error("Cannot save leaves: selected genus is missing");
       return;
     }
 
-    await assignLeavesToPlants(assignments).unwrap();
+    const payload = leaves.flatMap((leaf, index) => {
+      const localLeafId = getLeafId(leaf);
+
+      if (!localLeafId) {
+        console.error("Leaf has no local id:", leaf);
+        return [];
+      }
+
+      const selectedPlantId = getSelectedPlantIdForLeaf(leaf);
+
+      if (!selectedPlantId) {
+        console.error("Leaf has no selected plant:", leaf);
+        return [];
+      }
+
+      return [
+        {
+          client_leaf_id: localLeafId,
+          leaf_id: localLeafId,
+          plant_id: selectedPlantId,
+          genus_id: selectedGenus.id,
+          image_id: null,
+          leaf_index: (leaf as any).leaf_index ?? index + 1,
+          side_of_the_world_id: (leaf as any).side_of_the_world_id ?? null,
+          location_on_plant_id: (leaf as any).location_on_plant_id ?? null,
+        },
+      ];
+    });
+
+    console.log("Save leaves payload:", payload);
+
+    if (!payload.length) {
+      return;
+    }
+
+    const response = await saveLeaves(payload).unwrap();
+
+    const savedPlantIdsByLeafId = payload.reduce<Record<string, string>>(
+      (acc, item) => {
+        acc[item.client_leaf_id] = item.plant_id;
+        return acc;
+      },
+      {},
+    );
+
+    setSavedLeafPlantIds((prev) => ({
+      ...prev,
+      ...savedPlantIdsByLeafId,
+    }));
 
     setLeafPlantDrafts({});
+
+    console.log("Saved leaves response:", response);
   };
-  const imagesCount = useSelector(selectImagesCount);
-  const researchesQuery = useGetResearchesQuery();
+
   const handleAddToResearch = (research: {
     id?: string;
     research_id?: string;
@@ -81,19 +189,14 @@ const AnalyzerPage = () => {
   }) => {
     const researchId = research.id ?? research.research_id;
 
-    if (!researchId) return;
+    if (!researchId) {
+      return;
+    }
 
     console.log("Selected research:", researchId);
-
-    // Later: call mutation here.
-    // Example:
-    // addAnalyzerLeavesToResearch({
-    //   researchId,
-    //   leaves,
-    // });
   };
-  const { selectedGenus, classifiers, generaQuery, handleSelectGenera } =
-    useClassifiers();
+
+  const selectedLeafId = selectedLeaf ? getLeafId(selectedLeaf) : undefined;
 
   return (
     <>
@@ -102,12 +205,19 @@ const AnalyzerPage = () => {
           <ImageFullInfo image={selectedImage} leaves={leaves} />
         </Dialog>
       )}
+
       {selectedLeaf && (
         <Dialog open onClose={closeLeafFullInfo} fullWidth maxWidth="xl">
           <LeafFullInfo
             leaf={{
               ...selectedLeaf,
-              draftPlantId: leafPlantDrafts[selectedLeaf.leaf_id],
+              plantId: selectedLeafId
+                ? (savedLeafPlantIds[selectedLeafId] ??
+                  getLeafPlantId(selectedLeaf))
+                : getLeafPlantId(selectedLeaf),
+              draftPlantId: selectedLeafId
+                ? leafPlantDrafts[selectedLeafId]
+                : undefined,
             }}
             plants={plantsQuery.data ?? []}
             leafGenusId={selectedGenus?.id ?? ""}
@@ -115,6 +225,7 @@ const AnalyzerPage = () => {
           />
         </Dialog>
       )}
+
       <ClassifiersChapter
         selectedGenus={selectedGenus}
         classifiers={classifiers}
@@ -140,13 +251,6 @@ const AnalyzerPage = () => {
           maxHeight: "600px",
         }}
       >
-        {/*{isProcessing && (
-          <div>
-            <div>Stage: {progress.stage}</div>
-            {progress.model && <div>Model: {progress.model}</div>}
-            {progress.progress && <div>Progress: {progress.progress}</div>}
-          </div>
-        )}*/}
         <ImagesContainer
           addImages={addImages}
           images={images}
@@ -157,13 +261,14 @@ const AnalyzerPage = () => {
           leaves={leaves}
         />
       </PageChapter>
+
       <PageChapter
         header={{
           component: (
             <LeavesHeader
               leavesCount={leaves.length}
               onSave={handleSaveLeaves}
-              isSaving={assignState.isLoading}
+              isSaving={saveLeavesState.isLoading}
               hasUnsavedChanges={hasUnsavedLeafAssignments}
             />
           ),

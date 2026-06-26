@@ -24,7 +24,6 @@ const getPlantId = (plant: IPlantDataFull): string => {
 };
 const getPlantGenusId = (plant: IPlantDataFull): string | undefined => {
   const species = plant.plant_description?.species as any;
-  console.log(species);
   return (
     species?.genus_id?.toString() ??
     species?.genusId?.toString() ??
@@ -61,7 +60,7 @@ export const LeafFullInfo = ({
     (plant) => getPlantGenusId(plant) === leafGenusId,
   );
 
-  console.log(plants);
+  console.log("plants", plants);
 
   const selectedPlantId = leaf.draftPlantId ?? leaf.plantId ?? "";
 

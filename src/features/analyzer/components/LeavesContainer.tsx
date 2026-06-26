@@ -4,6 +4,7 @@ import { ImageCard } from "./ImageCard";
 import type { IImageData, IPrediction } from "@/shared/types/image";
 
 export interface ILeafData {
+  leaf_index: number;
   leaf_id: string;
   image_key: string;
   image: IImageData;

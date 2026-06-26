@@ -27,7 +27,6 @@ const PlantDetailDialog = () => {
     <GenericEntityDetailDialog<IPlantDataFull>
       mode={dialogType}
       data={plantQuery.data}
-      maxWidth="sm"
       state={{
         isLoading: plantQuery.isLoading,
         isError: plantQuery.isError,
