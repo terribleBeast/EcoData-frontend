@@ -1,4 +1,3 @@
-import { useGetOrganizationTypesQuery } from "@/api/endpoints";
 import { useSuccessNavigation } from "@/shared/hooks/useFormCallback";
 import type { ILabDataFull } from "@/shared/types/lab";
 import { useNavigate } from "react-router";
@@ -10,8 +9,6 @@ export const useDetailDialog = () => {
   const { create, update, mutationsState } = useLabsCrud();
 
   const onSuccess = useSuccessNavigation(() => navigate(".."), 1000);
-
-  const { data: organizationTypes = [] } = useGetOrganizationTypesQuery();
 
   const handleCreateLab = async (data: ILabDataFull) => {
     try {
@@ -30,7 +27,6 @@ export const useDetailDialog = () => {
     }
   };
   return {
-    organizationTypes,
     handleCreateLab,
     handleEditLab,
     mutationsState,

@@ -2,51 +2,60 @@ import {
   ImageStatus,
   type IImageData,
   type ImageStatusType,
+  type IPrediction,
 } from "@/shared/types/image";
 import { useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { selectGenus, selectImages, updateImages } from "../analyzerSlice";
+import {
+  addImages as addImagesAction,
+  deleteImage as deleteImageAction,
+  selectGenus,
+  selectImages,
+  updateImages,
+} from "../analyzerSlice";
 
 export const useImageState = () => {
   const images = useSelector(selectImages);
   const selectedGenus = useSelector(selectGenus);
   const dispatch = useDispatch();
-  const filesRef = useRef<Record<string, File>>({});
+
+  const filesRef = useRef<Map<string, File>>(new Map());
 
   const addImages = useCallback(
     (files: File[]) => {
-      if (selectedGenus) {
-        const newImages: IImageData[] = files.map((file) => {
-          const key = `file-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      if (!selectedGenus || files.length === 0) return;
 
-          filesRef.current[key] = file;
-          return {
-            id: Math.random(),
-            src: file.type.startsWith("image/")
-              ? URL.createObjectURL(file)
-              : undefined,
-            name: file.name,
-            key,
-            predictions: undefined,
-            status: ImageStatus.UPLOADED,
-            classifier: selectedGenus.id,
-          };
-        });
-        dispatch(updateImages(images.concat(newImages)));
-      }
+      const newImages: IImageData[] = files.map((file) => {
+        const key = crypto.randomUUID();
+        const src = URL.createObjectURL(file);
+
+        filesRef.current.set(key, file);
+
+        return {
+          id: key,
+          key,
+          name: file.name,
+          size: file.size,
+          src,
+          previewUrl: src,
+          status: ImageStatus.UPLOADED,
+          predictions: [] as IPrediction[],
+          classifier: undefined,
+        };
+      });
+
+      dispatch(addImagesAction(newImages));
     },
-    [dispatch, selectedGenus, images],
+    [dispatch, selectedGenus],
   );
 
   const updateImageStatus = useCallback(
     (image: IImageData, newStatus: ImageStatusType) => {
-      console.log(image.name);
-
       dispatch(
         updateImages(
           images.map((prevImage) =>
             prevImage.key === image.key
-              ? { ...image, status: newStatus }
+              ? { ...prevImage, status: newStatus }
               : prevImage,
           ),
         ),
@@ -57,25 +66,30 @@ export const useImageState = () => {
 
   const deleteImage = useCallback(
     (image: IImageData) => {
-      delete filesRef.current[image.key];
-      dispatch(
-        updateImages(images.filter((prevImage) => prevImage.key !== image.key)),
-      );
-    },
-    [images, dispatch],
-  );
+      filesRef.current.delete(image.key);
 
-  const replaceImages = useCallback(
-    (images: IImageData[]) => {
-      dispatch(updateImages(images));
+      if (image.src) {
+        URL.revokeObjectURL(image.src);
+      }
+
+      dispatch(deleteImageAction(image.key));
     },
     [dispatch],
   );
-  const getFile = useCallback((key: string) => filesRef.current[key], []);
+
+  const replaceImages = useCallback(
+    (newImages: IImageData[]) => {
+      dispatch(updateImages(newImages));
+    },
+    [dispatch],
+  );
+
+  const getImageFile = useCallback((key: string) => {
+    return filesRef.current.get(key);
+  }, []);
 
   return {
-    getFile,
-    updateImages,
+    getImageFile,
     addImages,
     updateImageStatus,
     deleteImage,

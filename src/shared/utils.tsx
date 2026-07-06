@@ -4,6 +4,7 @@
  *  \.[a-zA-Z]{2,}$   - TLD (min 2 chars)
  */
 
+import Typography from "@mui/material/Typography";
 import type { SerializedError } from "@reduxjs/toolkit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
@@ -22,7 +23,8 @@ export const deriveErrorMessage = (
       return "Не удалось подключиться к серверу";
 
     // TODO: Check display error message
-    return `Ошибка сервера (${status}) ${err.data}`;
+    // return `Ошибка сервера (${status}) ${err.data.detail}`;
+    return `Ошибка сервера (${status})`;
   }
 
   // SerializedError (from rejectWithValue or custom middleware)
@@ -38,6 +40,12 @@ export type DetailDialogModeType = (typeof DetailDialogModes)[number];
 
 export const getDialogType = (pathname: string): DetailDialogModeType => {
   if (pathname.endsWith("/new")) return "create";
-  if (/\/\d+\/edit$/.test(pathname)) return "edit";
+  if (/\/.*\/edit$/.test(pathname)) return "edit";
   return "read";
 };
+
+export const checkNull = (field: string | null | undefined) =>
+  field ? field : <Typography sx={{ fontStyle: "italic" }}> Нет </Typography>;
+
+export const checkNullName = (field: { name: string } | null | undefined) =>
+  field ? field.name : "—";

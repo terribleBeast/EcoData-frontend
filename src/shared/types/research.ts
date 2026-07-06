@@ -1,26 +1,46 @@
-import type { IPrediction } from "./image";
+import type { IPlantDataFull } from "@/features/plants/types";
+
+export type UUID = string;
 
 export const ResearchStatus = {
-  ACTIVE: "Активно",
-  STOP: "Прекращено",
+  DRAFT: "draft",
+  ACTIVE: "active",
+  COMPLETED: "completed",
+  ARCHIVED: "archived",
 } as const;
 
 export type ResearchStatus =
   (typeof ResearchStatus)[keyof typeof ResearchStatus];
 
-export interface IResearchData {
-  id: number;
-  title: string;
+export interface IResearcherShort {
+  id: UUID;
+  first_name?: string;
+  last_name?: string;
+  name?: string;
+  surname?: string;
 }
 
-export interface IResearchDataFull {
-  id: number;
+export interface IResearchData {
+  id: UUID;
+  research_id?: UUID;
   title: string;
-  goal: string;
-  startDate: string;
-  endDate: string;
-  researchers_id: number[];
-  status: ResearchStatus;
+
+  researcher_ids?: Array<UUID | IResearcherShort>;
+  researchers_id?: Array<UUID | IResearcherShort>;
+
+  created_by_researcher_id?: UUID | null;
+  created_by?: IResearcherShort | null;
+}
+
+export interface IResearchDataFull extends IResearchData {
+  goal: string | null;
+  description: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  status: ResearchStatus | string;
+  plants?: IPlantDataFull[];
 }
 
 export interface IPredictionTable {

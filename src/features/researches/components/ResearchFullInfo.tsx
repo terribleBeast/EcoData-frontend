@@ -4,8 +4,6 @@ import { Box, Button, Card, Typography } from "@mui/material";
 import { ResultTable } from "./PredictionResultTable";
 import { DialogSection } from "@/shared/ui/layout";
 import { ChapterInfoTemplate } from "@/shared/ui/ChapterInfoTemplate";
-import { useSelector } from "react-redux";
-import { selectUserInfo } from "@/features/user/authSlice";
 import type {
   IPredictionTable,
   IResearchDataFull,
@@ -14,21 +12,26 @@ import type { IResearcherData } from "@/shared/types/researcher";
 import { ResearchersList } from "./ResearchersList";
 import type { SerializedError } from "@reduxjs/toolkit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { useSelector } from "react-redux";
+import { selectResearcher } from "@/features/user/authSlice";
+import { ResearchPlantsList } from "./ResearchPlantsList";
 
 export const ResearchFullInfo = ({
   research,
   researchersQuery,
-  handleAddUserToResearch,
+  onJoinResearch,
+  onLeaveResearch,
   predictionQuery,
 }: {
-  handleAddUserToResearch: (data: IResearchDataFull) => void;
   research: IResearchDataFull;
-  researchersQuery: {
+  researchersQuery?: {
     data?: IResearcherData[];
     isLoading: boolean;
     isError: boolean;
     error?: FetchBaseQueryError | SerializedError;
   };
+  onJoinResearch: () => void;
+  onLeaveResearch: () => void;
   predictionQuery: {
     data?: IPredictionTable;
     isLoading: boolean;
@@ -36,16 +39,19 @@ export const ResearchFullInfo = ({
     error?: FetchBaseQueryError | SerializedError;
   };
 }) => {
-  const user_id = useSelector(selectUserInfo)?.id;
-  const isParticipant = user_id
-    ? research.researchers_id.includes(user_id)
-    : false;
+  const currentResearcher = useSelector(selectResearcher);
+
+  console.log(currentResearcher, researchersQuery);
+  const isParticipant =
+    currentResearcher &&
+    researchersQuery?.data?.some((r) => r.id === currentResearcher.id);
+
   const chaptersInfo: IChapterData[] = [
     {
       title: "Общая информация",
       fields: [
         { name: "Название", value: research.title },
-        { name: "Цель", value: research.goal },
+        { name: "Цель", value: research.goal ?? "—" },
         { name: "Статус", value: research.status },
       ],
     },
@@ -58,21 +64,14 @@ export const ResearchFullInfo = ({
           >
             <ResearchersList researchersQuery={researchersQuery} />
           </Box>
-          {user_id &&
+
+          {currentResearcher &&
             (!isParticipant ? (
               <Button
                 color="success"
                 variant="outlined"
-                sx={{
-                  marginTop: "1rem",
-                  width: "100%",
-                }}
-                onClick={() =>
-                  handleAddUserToResearch({
-                    ...research,
-                    researchers_id: [...research.researchers_id, user_id],
-                  })
-                }
+                sx={{ marginTop: "1rem", width: "100%" }}
+                onClick={onJoinResearch}
               >
                 <Typography>Присоединиться</Typography>
               </Button>
@@ -80,18 +79,8 @@ export const ResearchFullInfo = ({
               <Button
                 color="error"
                 variant="outlined"
-                sx={{
-                  width: "100%",
-                  marginTop: "1rem",
-                }}
-                onClick={() =>
-                  handleAddUserToResearch({
-                    ...research,
-                    researchers_id: research.researchers_id.filter(
-                      (r_id) => r_id !== user_id,
-                    ),
-                  })
-                }
+                sx={{ width: "100%", marginTop: "1rem" }}
+                onClick={onLeaveResearch}
               >
                 <Typography>Покинуть</Typography>
               </Button>
@@ -105,7 +94,8 @@ export const ResearchFullInfo = ({
     <DialogPanel>
       <DialogSection title="Таблица результатов" width="70%">
         <Card sx={{ overflowY: "auto", overflowX: "auto", maxHeight: "60vh" }}>
-          <ResultTable predictionQuery={predictionQuery} />
+          {/*<ResultTable predictionQuery={predictionQuery} />*/}
+          <ResearchPlantsList plants={research.plants ?? []} />
         </Card>
       </DialogSection>
       <DialogSection title="Сведения" width="30%">

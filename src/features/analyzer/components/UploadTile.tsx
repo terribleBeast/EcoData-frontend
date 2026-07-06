@@ -27,7 +27,13 @@ export const UploadTile = ({ getRootProps, getInputProps }: Props) => {
       <input {...getInputProps()} />
 
       <AddPhotoAlternateIcon fontSize="large" />
-      <Typography sx={{ textAlign: "center" }}>Добавить изображения</Typography>
+      <Typography sx={{ textAlign: "center" }}>
+        Добавить изображения{" "}
+      </Typography>
+      <Typography sx={{ textAlign: "center" }}>PNG / JPG</Typography>
+      <Typography sx={{ textAlign: "center" }}>
+        Максимальный размер: 10 МБ
+      </Typography>
     </Paper>
   );
 };

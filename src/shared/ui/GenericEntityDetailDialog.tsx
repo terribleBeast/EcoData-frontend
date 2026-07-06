@@ -8,7 +8,7 @@ import { NotFoundState } from "./states/NotFoundState";
 import type { SerializedError } from "@reduxjs/toolkit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
-export type EntityDetailDialogProps<TDetail extends { id: number }> = {
+export type EntityDetailDialogProps<TDetail = Record<string, unknown>> = {
   data: TDetail | undefined;
   state: {
     isLoading: boolean;
@@ -30,7 +30,7 @@ export type EntityDetailDialogProps<TDetail extends { id: number }> = {
   readonly mode: DetailDialogModeType;
 };
 
-export function GenericEntityDetailDialog<TDetail extends { id: number }>({
+export function GenericEntityDetailDialog<TDetail = Record<string, unknown>>({
   renderRead,
   renderCreate,
   mode,

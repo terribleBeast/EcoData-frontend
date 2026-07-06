@@ -1,14 +1,14 @@
-import { Box, Chip, Stack, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import { PageChapter } from "@/shared/ui/layout";
 import { type IGenus } from "@/shared/types";
 import { ClassifierDropdown } from "./ClassifierDropdown";
 import { ChapterHeaderTemplate } from "@/shared/ui/ChapterHeader";
 import { useClassifiers } from "../hooks/useClassifiers";
-import { QueryState } from "@/shared/ui/states/QueryState";
+import { useMemo } from "react";
 
 type Props = {
   selectedGenus: IGenus | undefined;
-  handleSelectGenera: (item: IGenus) => void;
+  handleSelectGenera: (item: IGenus | null) => void | Promise<void>;
   generaQuery: ReturnType<typeof useClassifiers>["generaQuery"];
   classifiers: ReturnType<typeof useClassifiers>["classifiers"];
 };
@@ -16,50 +16,68 @@ type Props = {
 export const ClassifiersChapter = ({
   selectedGenus,
   handleSelectGenera,
-  classifiers,
   generaQuery,
+  classifiers,
 }: Props) => {
+  const orderedClassifiers = useMemo(() => {
+    return [...classifiers].sort((a, b) => {
+      const first = a.latin_name ?? "";
+      const second = b.latin_name ?? "";
+
+      return first.localeCompare(second, ["ru", "en"], {
+        sensitivity: "base",
+      });
+    });
+  }, [classifiers]);
   return (
     <PageChapter
       header={{
         component: (
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <ChapterHeaderTemplate
-              header={{ title: "Роды и сорта растений" }}
-            />
+            <ChapterHeaderTemplate header={{ title: "Роды и виды растений" }} />
           </Box>
         ),
       }}
     >
-      <Box sx={{ display: "grid", gridTemplateColumns: "400px 1fr ", gap: 4 }}>
+      <Box sx={{ display: "grid", gridTemplateColumns: "400px 1fr", gap: 4 }}>
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
             Род растения
           </Typography>
-          {generaQuery.data ? (
-            <ClassifierDropdown
-              onSelect={(item: IGenus) => handleSelectGenera(item)}
-              genera={generaQuery.data}
-              selectedGenus={selectedGenus}
-            />
-          ) : (
-            <QueryState
-              isError={generaQuery.isError}
-              isLoading={generaQuery.isLoading}
-            />
+
+          <ClassifierDropdown
+            value={selectedGenus}
+            options={generaQuery.data ?? []}
+            loading={generaQuery.isLoading || generaQuery.isFetching}
+            onSelect={handleSelectGenera}
+          />
+
+          {generaQuery.isError && (
+            <Typography color="error" variant="caption">
+              Не удалось загрузить список родов
+            </Typography>
           )}
         </Box>
+
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
-            Сорта
+            Виды с доступными моделями
           </Typography>
 
-          <Stack direction="row" spacing={1.5} sx={{ flexWrap: "wrap" }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "0.75rem",
+              width: "100%",
+              maxWidth: "800px",
+            }}
+          >
             {selectedGenus !== undefined ? (
-              classifiers.map((item) => (
+              orderedClassifiers.map((item) => (
                 <Chip
-                  key={item.id}
-                  label={item.name}
+                  key={item.id ?? item.latin_name}
+                  label={item.russian_name}
                   sx={{
                     height: 44,
                     px: 1,
@@ -68,6 +86,7 @@ export const ClassifiersChapter = ({
                     bgcolor: "#EAF4E8",
                     color: "success.dark",
                     fontWeight: 500,
+                    maxWidth: "100%",
                   }}
                 />
               ))
@@ -79,11 +98,11 @@ export const ClassifiersChapter = ({
                   fontStyle: "italic",
                 }}
               >
-                Чтобы увидеть доступные сорта, которых доступна классификация,
-                выберите род растения
+                Чтобы увидеть доступные виды, для которых доступна
+                классификация, выберите род растения
               </Typography>
             )}
-          </Stack>
+          </Box>
         </Box>
       </Box>
     </PageChapter>

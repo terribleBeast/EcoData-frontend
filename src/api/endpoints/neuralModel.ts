@@ -1,13 +1,28 @@
-import type { IImageData, IPrediction } from "@/shared/types/image";
+import type { IPrediction } from "@/shared/types/image";
 import { apiSlice } from "../apiSlice";
 import type { ISpecies } from "@/shared/types";
 
+type NeuralModelResponse = {
+  neural_model_id: string;
+  file: {
+    file_id: string;
+    original_filename: string;
+  };
+  species: {
+    species_id: string;
+    latin_name: string;
+  };
+  model_type: string;
+  input_format: string;
+  output_format: string;
+  is_active: boolean;
+  created_at: string;
+};
+
 export const neuralModelEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getClassifiers: builder.query<ISpecies[], string>({
-      query: (id) => `/classifiers/${id}`,
-      transformResponse: (response: { data: ISpecies[] }): ISpecies[] =>
-        response.data,
+    getAvailableSpeciesByGenus: builder.query<ISpecies[], string>({
+      query: (genusId) => `/analyzer/available-species/${genusId}`,
     }),
     updatePrediction: builder.mutation<
       IPrediction[],
@@ -32,6 +47,6 @@ export const neuralModelEndpoints = apiSlice.injectEndpoints({
 
 export const {
   useUpdatePredictionMutation,
-  useLazyGetClassifiersQuery,
-  useGetClassifiersQuery,
+  useGetAvailableSpeciesByGenusQuery,
+  useLazyGetAvailableSpeciesByGenusQuery,
 } = neuralModelEndpoints;

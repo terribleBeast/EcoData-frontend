@@ -8,12 +8,13 @@ import {
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import Person from "@mui/icons-material/PersonOutlined";
 import { Link as RouterLink } from "react-router";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectIsAuthenticated,
-  selectUserInfo,
+  selectResearcher,
   userLoggedOut,
 } from "@/features/user/authSlice";
 
@@ -25,8 +26,7 @@ function Header({
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isLogIn = useSelector(selectIsAuthenticated);
-  const user = useSelector(selectUserInfo);
-  const username = `${user?.surname} ${user?.name[0]}. ${user?.surname[0]}.`;
+  const researcher = useSelector(selectResearcher);
   return (
     <AppBar position="static" sx={{ width: "100%" }}>
       <Toolbar
@@ -71,14 +71,22 @@ function Header({
                 dispatch(userLoggedOut());
                 navigate("/auth");
               }}
+            >
+              <Typography>{"Выйти"}</Typography>
+            </Button>
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                navigate(`/researchers/${researcher?.researcher_id}`);
+              }}
               sx={{ textTransform: "none" }}
             >
-              {user ? <Typography>{username} </Typography> : "Выйти"}
-            </Button>
+              <Person />
+            </IconButton>
           </Box>
         ) : (
           <Button color="inherit" onClick={() => navigate("/auth")}>
-            Войти
+            <Typography> Войти</Typography>
           </Button>
         )}
       </Toolbar>

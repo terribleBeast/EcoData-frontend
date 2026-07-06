@@ -1,90 +1,17 @@
-import {
-  TableCell,
-  Table,
-  TableHead,
-  TableRow,
-  TableBody,
-  Button,
-  Typography,
-  Box,
-  Paper,
-} from "@mui/material";
+import { Button, Typography, Box, Paper, Chip } from "@mui/material";
 import { DialogPanel } from "@/shared/components/DialogPanel";
-import { type IImageData, type IPrediction } from "../../../shared/types/image";
-import type { MRT_ColumnDef } from "material-react-table";
-import type { IChapterData } from "@/shared/types";
-import { ChapterInfoTemplate } from "@/shared/ui/ChapterInfoTemplate";
+import { type IImageData } from "../../../shared/types/image";
 import { DialogSection } from "@/shared/ui/layout";
+import type { ILeafData } from "./LeavesContainer";
+import { InfoTable, PercentBar, StatusBadge } from "./InfoTable";
 
-const columns: MRT_ColumnDef<IPrediction>[] = [
-  {
-    header: "Классификатор",
-  },
-  {
-    header: "Вероятность",
-  },
-];
+interface ImageFullInfoProps {
+  image: IImageData;
+  leaves: ILeafData[];
+}
 
-export const ImageFullInfo = ({ image }: { image: IImageData }) => {
-  const bestValue =
-    image.predictions !== null && image.predictions !== undefined
-      ? image.predictions.reduce((max, current) =>
-          current.probability > max.probability ? current : max,
-        )
-      : null;
-
-  const chapterInfo: IChapterData[] = [
-    {
-      title: "Общая",
-      fields: [
-        { name: "Имя", value: image.name },
-        { name: "Статус", value: image.status },
-      ],
-    },
-    {
-      title: "Результаты анализа",
-      fields: (
-        <>
-          <Typography sx={{ fontWeight: "bold" }} gutterBottom>
-            Выбранный классификатор:{" "}
-            <Typography sx={{ display: "inline" }}>
-              {image.classifier}
-            </Typography>
-          </Typography>
-          {image.predictions !== null && image.predictions !== undefined ? (
-            <Table>
-              <TableHead>
-                <TableRow>
-                  {columns.map((column, index) => (
-                    <TableCell key={index}>{column.header}</TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {image.predictions.map((prediction, index) => (
-                  <TableRow
-                    key={index}
-                    style={{
-                      backgroundColor:
-                        bestValue &&
-                        prediction.probability === bestValue.probability
-                          ? "lightgreen"
-                          : "",
-                    }}
-                  >
-                    <TableCell>{prediction.classifier}</TableCell>
-                    <TableCell>{prediction.probability.toFixed(2)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <Typography>Нет предсказаний</Typography>
-          )}
-        </>
-      ),
-    },
-  ];
+export const ImageFullInfo = ({ image, leaves }: ImageFullInfoProps) => {
+  const imageLeaves = leaves.filter((leaf) => leaf.image_key === image.key);
 
   return (
     <DialogPanel>
@@ -95,6 +22,7 @@ export const ImageFullInfo = ({ image }: { image: IImageData }) => {
           display: "flex",
           flexDirection: "column",
           padding: "1rem",
+          borderRadius: "16px",
         }}
       >
         <Typography
@@ -103,7 +31,6 @@ export const ImageFullInfo = ({ image }: { image: IImageData }) => {
             marginBottom: "1.5rem",
             fontWeight: 600,
             color: theme.palette.secondary.main,
-            height: "5%",
             alignSelf: "center",
           })}
         >
@@ -111,46 +38,87 @@ export const ImageFullInfo = ({ image }: { image: IImageData }) => {
         </Typography>
 
         <img
-          src={image.src !== undefined ? image.src : "no-image-icon_1200.png"}
-          alt={image.src}
+          src={image.src ?? "no-image-icon_1200.png"}
+          alt={image.name}
           width="100%"
+          style={{
+            borderRadius: "12px",
+            objectFit: "contain",
+          }}
         />
+
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
             marginTop: "1rem",
+            gap: "0.75rem",
           }}
         >
           <Button variant="contained" color="success">
             Лупа
           </Button>
+
           <Button
-            href={image.src !== undefined ? image.src : ""}
+            href={image.src ?? ""}
             target="_blank"
             variant="contained"
             color="success"
           >
             Открыть в новой вкладке
           </Button>
+
           <Button variant="contained" color="success">
             Линейка
           </Button>
         </Box>
       </Paper>
-      {/*<Paper
-        elevation={3}
-        sx={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          padding: "1rem",
-        }}
-      >*/}
+
       <DialogSection title="Информация">
-        <ChapterInfoTemplate chaptersInfo={chapterInfo} />
+        <InfoTable
+          title="Общая информация"
+          rows={[
+            {
+              label: "Имя файла",
+              value: image.name,
+            },
+            {
+              label: "Статус",
+              value: <StatusBadge status={image.status} />,
+            },
+            {
+              label: "Количество листьев",
+              value: imageLeaves.length,
+            },
+          ]}
+        />
+
+        <InfoTable
+          title="Листья изображения"
+          rows={
+            imageLeaves.length > 0
+              ? imageLeaves.map((leaf, index) => ({
+                  label: `Лист ${index + 1}`,
+                  value: leaf.bestPrediction ? (
+                    <Box>
+                      <Typography sx={{ fontWeight: 600 }}>
+                        {leaf.bestPrediction.classifier}
+                      </Typography>
+                      <PercentBar value={leaf.bestPrediction.probability} />
+                    </Box>
+                  ) : (
+                    "Нет данных о классификации"
+                  ),
+                }))
+              : [
+                  {
+                    label: "Листья",
+                    value: "Для этого изображения листья пока не созданы",
+                  },
+                ]
+          }
+        />
       </DialogSection>
-      {/*</Paper>*/}
     </DialogPanel>
   );
 };

@@ -2,53 +2,59 @@
 
 import type { SerializedError } from "@reduxjs/toolkit";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+
 import { mutationState, queryState } from "./utils";
 
-// ── Types ────────────────────────────────────────────────────────────────
+export type UUID = string;
 
-/**
- * Captures the shape of an RTK Query mutation hook returned by
- * `apiSlice.useXxxMutation()` without depending on internal RTKQ types.
- *
- * `TArg`    — the argument the trigger function accepts
- * `TResult` — the result type (usually void for mutations)
- */
-type MutationHook<TArg, TResult = unknown> = () => readonly [
-  (arg: TArg) => Promise<TResult>,
-  {
-    isLoading: boolean;
-    isError: boolean;
-    isSuccess: boolean;
-    error?: FetchBaseQueryError | SerializedError | undefined;
-    reset?: () => void;
-  },
-];
+// ── RTK Query compatible hook shapes ────────────────────────────────────────
 
-/**
- * Captures the shape of an RTK Query query hook returned by
- * `apiSlice.useXxxQuery(arg)`.
- */
-type QueryHook<TArg, TResult> = (arg: TArg) => {
+type QueryState<TResult> = {
   data?: TResult;
   isLoading: boolean;
+  isFetching?: boolean;
   isError: boolean;
+  isSuccess?: boolean;
   error?: FetchBaseQueryError | SerializedError | undefined;
-  // … other RTKQ fields are simply ignored
 };
 
-type LazyQueryHook<TArg, TResult> = () => [
-  (arg: TArg) => void,
-  {
-    data?: TResult;
-    isLoading: boolean;
-    isError: boolean;
-    error?: FetchBaseQueryError | SerializedError | undefined;
-    // … other RTKQ fields are simply ignored
-  },
-  unknown,
+type MutationState = {
+  isLoading: boolean;
+  isError: boolean;
+  isSuccess: boolean;
+  error?: FetchBaseQueryError | SerializedError | undefined;
+  reset?: () => void;
+};
+
+/**
+ * Minimal shape of an RTK Query query hook.
+ *
+ * TArg is usually `void` for list queries, but can also be a filter/query object.
+ */
+type QueryHook<TArg, TResult> = (arg: TArg) => QueryState<TResult>;
+
+/**
+ * Minimal shape of an RTK Query lazy query hook.
+ *
+ * Detail queries in this project use UUID path parameters.
+ */
+type LazyQueryHook<TResult> = () => readonly [
+  (id: UUID) => unknown,
+  QueryState<TResult>,
+  unknown?,
 ];
 
-/** Aggregated state across all CRUD operations */
+/**
+ * Minimal shape of an RTK Query mutation hook.
+ */
+type MutationHook<TArg> = () => readonly [
+  (arg: TArg) => unknown,
+  MutationState,
+];
+
+// ── Public types ────────────────────────────────────────────────────────────
+
+/** Aggregated state for one CRUD operation group. */
 export interface CrudState {
   isLoading: boolean;
   isError: boolean;
@@ -56,26 +62,43 @@ export interface CrudState {
   error?: FetchBaseQueryError | SerializedError | undefined;
 }
 
-/** Minimal contract any entity must satisfy to participate in CRUD */
+/**
+ * Minimal contract for entities used by `useEntityCRUD`.
+ *
+ * Backend IDs are UUID strings, not numbers.
+ */
 export interface EntityWithId {
-  id: number;
+  id: UUID;
 }
 
-/** Uniform CRUD API returned by the hook */
+/**
+ * Standard update argument used by update endpoints.
+ *
+ * Most frontend endpoint files convert `entity_id` to the path parameter:
+ * PATCH /entity/{entity_id}
+ */
+export type EntityUpdateArg<TCreateArg> = Partial<TCreateArg> & {
+  entity_id: UUID;
+};
+
+/** Uniform CRUD API returned by the hook. */
 export interface EntityCRUD<
   TEntity extends EntityWithId,
   TCreateArg = TEntity,
+  TUpdateArg = EntityUpdateArg<TCreateArg>,
 > {
   items: TEntity[];
-  get: (id: number) => void;
+
+  get: (id: UUID) => void;
   create: (arg: TCreateArg) => Promise<unknown>;
-  update: (arg: Partial<TEntity> & { id: number }) => Promise<unknown>;
-  remove: (id: number) => unknown;
+  update: (arg: TUpdateArg) => Promise<unknown>;
+  remove: (id: UUID) => unknown;
 
   queriesState: {
     list: CrudState;
     detail: CrudState;
   };
+
   mutationsState: {
     create: CrudState;
     delete: CrudState;
@@ -83,43 +106,51 @@ export interface EntityCRUD<
   };
 }
 
-// ── Core hook ────────────────────────────────────────────────────────────
+// ── Core hook ───────────────────────────────────────────────────────────────
 
 /**
- * Generic CRUD hook for any RTK Query-backed entity.
+ * Generic CRUD hook for RTK Query backed entities.
  *
- * Pass the list-query hook, the three mutation hooks, and the query argument,
- * and get back a uniform `{ items, create, update, remove, state }` API.
- *
- * @example
- * ```ts
- * const { items, create, update, remove, state } = useEntityCRUD(
- *   useGetResearchersQuery,
- *   useCreateResearcherFullMutation,
- *   useEditResearcherFullMutation,
- *   useDeleteResearcherMutation,
- *   undefined,
- * );
- * ```
+ * Important:
+ * - entity IDs are UUID strings;
+ * - update mutations receive `{ entity_id, ...body }`;
+ * - `get` and `remove` receive only the UUID string.
  */
 export function useEntityCRUD<
   TEntity extends EntityWithId,
   TQueryArg = void,
   TCreateArg = TEntity,
+  TUpdateArg = EntityUpdateArg<TCreateArg>,
 >(
   useListQuery: QueryHook<TQueryArg, TEntity[]>,
-  useLazyGetQuery: LazyQueryHook<number, TEntity>,
+  useLazyGetQuery: LazyQueryHook<TEntity>,
   useCreateMutation: MutationHook<TCreateArg>,
-  useUpdateMutation: MutationHook<Partial<TEntity> & { id: number }>,
-  useDeleteMutation: MutationHook<number>,
+  useUpdateMutation: MutationHook<TUpdateArg>,
+  useDeleteMutation: MutationHook<UUID>,
   listQueryArg: TQueryArg,
-): EntityCRUD<TEntity, TCreateArg> {
+): EntityCRUD<TEntity, TCreateArg, TUpdateArg> {
   const listResult = useListQuery(listQueryArg);
+  const [getTrigger, getResult] = useLazyGetQuery();
 
-  const [get, getResult] = useLazyGetQuery();
-  const [create, createResult] = useCreateMutation();
-  const [update, updateResult] = useUpdateMutation();
-  const [remove, deleteResult] = useDeleteMutation();
+  const [createTrigger, createResult] = useCreateMutation();
+  const [updateTrigger, updateResult] = useUpdateMutation();
+  const [deleteTrigger, deleteResult] = useDeleteMutation();
+
+  const get = (id: UUID) => {
+    getTrigger(id);
+  };
+
+  const create = async (arg: TCreateArg) => {
+    return await Promise.resolve(createTrigger(arg));
+  };
+
+  const update = async (arg: TUpdateArg) => {
+    return await Promise.resolve(updateTrigger(arg));
+  };
+
+  const remove = (id: UUID) => {
+    return deleteTrigger(id);
+  };
 
   return {
     items: listResult.data ?? [],

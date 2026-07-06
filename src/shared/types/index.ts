@@ -2,21 +2,42 @@ export type { IClassifier } from "./classifier";
 export { classifiers } from "./classifier";
 export type { IChapterData, IChapterField } from "./chapter";
 export type {
-  IPlantData,
   IPlantDataFull,
   IGenus,
   ISpecies,
   ILeafType,
   ILifeForm,
-  IPlantDescription,
   IPlantDescriptionFull,
 } from "./plant";
 export type {
   ILabData,
   ILabDataFull,
-  IOrganizationDetails,
+  LaboratoryCreate,
+  LaboratoryUpdate,
+  IOrganizationResponse,
   IOrganizationType,
+  IOrganizationDetails,
 } from "./lab";
+export type {
+  IResearchData,
+  IResearchDataFull,
+  ResearchStatus,
+} from "./research";
+export type {
+  IResearcherData,
+  IResearcherDataFull,
+  ResearcherCreate,
+} from "./researcher";
+export type {
+  RegisterRequest,
+  LoginRequest,
+  TokenResponse,
+  ResearcherProfileResponse,
+  UserResponse,
+  IAuthUser,
+  ICheckExistUser,
+  ICreateUser,
+} from "./user";
 export type {
   ICountry,
   IRegion,
@@ -26,5 +47,14 @@ export type {
   IStreet,
   IHouseNumber,
   IAddressData,
-  IAddressDataFull,
+  CountryNested,
+  RegionNested,
+  DistrictNested,
+  SettlementTypeNested,
+  SettlementNested,
+  LocationNested,
+  CountryResponse,
+  RegionResponse,
+  DistrictResponse,
+  SettlementResponse,
 } from "./location";

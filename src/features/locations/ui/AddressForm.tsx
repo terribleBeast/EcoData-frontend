@@ -1,15 +1,11 @@
-import type { IAddressDataFull, ICountry } from "@/shared/types/location";
+import type { IAddressDataFull } from "../types";
+import type { CountryResponse } from "@/shared/types/location";
 import { useForm, Controller } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import FormPage from "@/shared/components/FormPage";
 import type { IEndpointState } from "@/shared/types/form";
 import { EntityForm } from "@/shared/ui/EntityForm";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import {
   useGetRegionsQuery,
   useGetDistrictsQuery,
@@ -20,18 +16,18 @@ import { useState } from "react";
 
 // Form values extend the address DTO with cascading FK fields
 type AddressFormValues = IAddressDataFull & {
-  country_id: number;
-  region_id: number;
-  district_id: number;
-  settlement_id: number;
-  street_id: number;
+  country_id: string;
+  region_id: string;
+  district_id: string;
+  settlement_id: string;
+  street_id: string;
 };
 
 interface IAddressFormProps {
   title: string;
   submitLabel: string;
   submitLoadingLabel: string;
-  countries: ICountry[];
+  countries: CountryResponse[];
   initialData?: IAddressDataFull;
   onSubmit: SubmitHandler<AddressFormValues>;
   endpointState: IEndpointState;
@@ -46,31 +42,32 @@ export const AddressForm = ({
   endpointState,
   countries,
 }: IAddressFormProps) => {
-  const {
-    control,
-    handleSubmit,
-  } = useForm<AddressFormValues>({
+  const { control, handleSubmit } = useForm<AddressFormValues>({
     mode: "onBlur",
     reValidateMode: "onSubmit",
-    defaultValues: initialData ?? { house_number_id: 0, street_settlement_association_id: 0 },
+    defaultValues: initialData ?? {
+      house_number_id: "",
+      street_id: "",
+      settlement_id: "",
+    },
   });
 
   // Cascading state
-  const [countryId, setCountryId] = useState<number | null>(null);
-  const [regionId, setRegionId] = useState<number | null>(null);
-  const [districtId, setDistrictId] = useState<number | null>(null);
-  const [settlementId, setSettlementId] = useState<number | null>(null);
+  const [countryId, setCountryId] = useState<string | null>(null);
+  const [regionId, setRegionId] = useState<string | null>(null);
+  const [districtId, setDistrictId] = useState<string | null>(null);
+  const [settlementId, setSettlementId] = useState<string | null>(null);
 
-  const { data: regions = [] } = useGetRegionsQuery(countryId ?? 0, {
+  const { data: regions = [] } = useGetRegionsQuery(countryId ?? "", {
     skip: countryId === null,
   });
-  const { data: districts = [] } = useGetDistrictsQuery(regionId ?? 0, {
+  const { data: districts = [] } = useGetDistrictsQuery(regionId ?? "", {
     skip: regionId === null,
   });
-  const { data: settlements = [] } = useGetSettlementsQuery(districtId ?? 0, {
+  const { data: settlements = [] } = useGetSettlementsQuery(districtId ?? "", {
     skip: districtId === null,
   });
-  const { data: streets = [] } = useGetStreetsQuery(settlementId ?? 0, {
+  const { data: streets = [] } = useGetStreetsQuery(settlementId ?? "", {
     skip: settlementId === null,
   });
 
@@ -95,14 +92,14 @@ export const AddressForm = ({
                 label="Страна"
                 onChange={(e) => {
                   field.onChange(e);
-                  setCountryId(Number(e.target.value));
+                  setCountryId(e.target.value);
                   setRegionId(null);
                   setDistrictId(null);
                   setSettlementId(null);
                 }}
               >
                 {countries.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
+                  <MenuItem key={c.country_id} value={c.country_id}>
                     {c.name}
                   </MenuItem>
                 ))}
@@ -123,13 +120,13 @@ export const AddressForm = ({
                 label="Регион"
                 onChange={(e) => {
                   field.onChange(e);
-                  setRegionId(Number(e.target.value));
+                  setRegionId(e.target.value);
                   setDistrictId(null);
                   setSettlementId(null);
                 }}
               >
                 {regions.map((r) => (
-                  <MenuItem key={r.id} value={r.id}>
+                  <MenuItem key={r.region_id} value={r.region_id}>
                     {r.name}
                   </MenuItem>
                 ))}
@@ -150,12 +147,12 @@ export const AddressForm = ({
                 label="Район"
                 onChange={(e) => {
                   field.onChange(e);
-                  setDistrictId(Number(e.target.value));
+                  setDistrictId(e.target.value);
                   setSettlementId(null);
                 }}
               >
                 {districts.map((d) => (
-                  <MenuItem key={d.id} value={d.id}>
+                  <MenuItem key={d.district_id} value={d.district_id}>
                     {d.name}
                   </MenuItem>
                 ))}
@@ -176,11 +173,11 @@ export const AddressForm = ({
                 label="Населённый пункт"
                 onChange={(e) => {
                   field.onChange(e);
-                  setSettlementId(Number(e.target.value));
+                  setSettlementId(e.target.value);
                 }}
               >
                 {settlements.map((s) => (
-                  <MenuItem key={s.id} value={s.id}>
+                  <MenuItem key={s.settlement_id} value={s.settlement_id}>
                     {s.name}
                   </MenuItem>
                 ))}

@@ -1,20 +1,18 @@
-// frontend/src/features/researchers/hooks/useResearchersState.ts
-
-import { useEntityCRUD } from "@/shared/hooks/useEntityCRUD";
 import {
-  useCreateResearcherFullMutation,
+  useCreateResearcherMutation,
   useDeleteResearcherMutation,
-  useEditResearcherFullMutation,
-  useLazyGetResearcherByIdQuery,
   useGetResearchersQuery,
+  useLazyGetResearcherByIdQuery,
+  useUpdateResearcherMutation,
 } from "@/api/endpoints";
+import { useEntityCRUD } from "@/shared/hooks/useEntityCRUD";
 
 export const useResearchersCrud = () => {
   const crud = useEntityCRUD(
     useGetResearchersQuery,
     useLazyGetResearcherByIdQuery,
-    useCreateResearcherFullMutation,
-    useEditResearcherFullMutation,
+    useCreateResearcherMutation,
+    useUpdateResearcherMutation,
     useDeleteResearcherMutation,
     undefined,
   );

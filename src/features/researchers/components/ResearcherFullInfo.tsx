@@ -1,4 +1,4 @@
-import { Card, Typography } from "@mui/material";
+import { Card } from "@mui/material";
 import { DialogPanel } from "@/shared/components/DialogPanel";
 import type { IChapterData } from "@/shared/types";
 import { DialogSection } from "@/shared/ui/layout";
@@ -6,9 +6,7 @@ import { ChapterInfoTemplate } from "@/shared/ui/ChapterInfoTemplate";
 import type { IResearchData } from "@/shared/types/research";
 import type { IResearcherDataFull } from "@/shared/types/researcher";
 import { ResearchesList } from "./ResearchesList";
-
-const checkNull = (field: string | undefined) =>
-  field ? field : <Typography sx={{ fontStyle: "italic" }}> Нет </Typography>;
+import { checkNull, checkNullName } from "@/shared/utils";
 
 export const ResearcherFullInfo = ({
   researcher,
@@ -21,25 +19,26 @@ export const ResearcherFullInfo = ({
     isError: boolean;
   };
 }) => {
+  console.log(researcher);
   const chaptersInfo: IChapterData[] = [
     {
       title: "Общая информация",
       fields: [
         {
           name: "Фамилия",
-          value: researcher.surname,
+          value: researcher.last_name,
         },
         {
           name: "Имя",
-          value: researcher.name,
+          value: researcher.first_name,
         },
         {
           name: "Отчество",
-          value: researcher.patronymic,
+          value: checkNull(researcher.patronymic ?? null),
         },
         {
           name: "Работа",
-          value: checkNull(researcher.job),
+          value: checkNullName(researcher.job),
         },
       ],
     },
@@ -52,7 +51,7 @@ export const ResearcherFullInfo = ({
         },
         {
           name: "Телефон",
-          value: checkNull(researcher.phoneNumber),
+          value: checkNull(researcher.phone),
         },
       ],
     },

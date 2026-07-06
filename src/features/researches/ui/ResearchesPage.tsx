@@ -9,7 +9,7 @@ import { PageChapter } from "@/shared/ui/layout";
 
 interface ResearchMeta {
   onEdit: (row: IResearchDataFull) => void;
-  onDelete: (research_id: number) => void;
+  onDelete: (research_id: string) => void;
 }
 
 const researchColumns: MRT_ColumnDef<IResearchDataFull>[] = [
@@ -25,11 +25,11 @@ const researchColumns: MRT_ColumnDef<IResearchDataFull>[] = [
     header: "Цель",
   },
   {
-    accessorKey: "startDate",
+    accessorKey: "start_date",
     header: "Дата начала",
   },
   {
-    accessorKey: "endDate",
+    accessorKey: "end_date",
     header: "Дата окончания",
   },
   {
@@ -88,11 +88,13 @@ const ResearchesPage = () => {
         columns={researchColumns}
         data={researches}
         isLoading={queriesState.list.isLoading}
-        onRowClick={(row) => navigate(`/researches/${row.id}`)}
+        onRowClick={(row) => navigate(`/researches/${row.research_id}`)}
         meta={{
-          onEdit: (research: IResearchDataFull) =>
-            navigate(`/researches/${research.id}/edit`),
-          onDelete: (research_id: number) => {
+          onEdit: (research: IResearchDataFull) => {
+            console.log(research);
+            navigate(`/researches/${research.id}/edit`);
+          },
+          onDelete: (research_id: string) => {
             remove(research_id);
           },
         }}

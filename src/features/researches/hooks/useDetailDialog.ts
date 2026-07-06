@@ -22,7 +22,7 @@ export const useDetailDialog = () => {
   };
   const handleEditResearch = async (data: IResearchDataFull) => {
     try {
-      await update(data);
+      await update({ ...data, entity_id: data.research_id });
       onSuccess();
     } catch {
       // FormTemplate shows the error via endpointState.isError

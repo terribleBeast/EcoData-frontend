@@ -6,6 +6,12 @@ import { type DetailDialogModeType, getDialogType } from "@/shared/utils";
 import { useLocation, useParams } from "react-router";
 import { useResearchDetail } from "../hooks/useResearchDetial";
 import type { IResearchDataFull } from "@/shared/types/research";
+import {
+  useInviteResearchersMutation,
+  useSeparateResearchersMutation,
+} from "@/api/endpoints";
+import { useSelector } from "react-redux";
+import { selectResearcher } from "@/features/user/authSlice";
 
 const ResearchDetailDialog = () => {
   const { handleCreateResearch, handleEditResearch, researchers, state } =
@@ -13,10 +19,32 @@ const ResearchDetailDialog = () => {
 
   const { pathname } = useLocation();
   const { id } = useParams<{ id: string }>();
-
+  console.log(id);
   const dialogType: DetailDialogModeType = getDialogType(pathname);
-  const { researchQuery, researchersQuery, predictionQuery } =
-    useResearchDetail(id ? Number(id) : -1);
+  const { researchQuery, researchersByIdsQuery, predictionQuery } =
+    useResearchDetail(id ?? "");
+
+  const currentResearcher = useSelector(selectResearcher);
+  const [invite] = useInviteResearchersMutation();
+  const [separate] = useSeparateResearchersMutation();
+
+  const handleJoin = async () => {
+    if (!id || !currentResearcher) return;
+    await invite({
+      research_id: id,
+      body: { researcher_ids: [currentResearcher.id] },
+    });
+    researchQuery.refetch();
+  };
+
+  const handleLeave = async () => {
+    if (!id || !currentResearcher) return;
+    await separate({
+      research_id: id,
+      body: { researcher_ids: [currentResearcher.id] },
+    });
+    researchQuery.refetch();
+  };
 
   return (
     <GenericEntityDetailDialog<IResearchDataFull>
@@ -30,9 +58,10 @@ const ResearchDetailDialog = () => {
       renderRead={(research) => (
         <ResearchFullInfo
           predictionQuery={predictionQuery}
-          handleAddUserToResearch={handleEditResearch}
+          onJoinResearch={handleJoin}
+          onLeaveResearch={handleLeave}
           research={research}
-          researchersQuery={researchersQuery}
+          researchersQuery={researchersByIdsQuery}
         />
       )}
       renderCreate={() => (

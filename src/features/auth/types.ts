@@ -11,4 +11,13 @@ export interface IFormLogInProps<
 > extends IAuthFormProps<ICheckExistUser> {
   onSubmit: SubmitHandler<ICheckExistUser>;
   onForgotPassword: () => void;
+  showAlertForgotPassword: boolean;
+}
+
+export interface RegisterResearcher {
+  first_name: string;
+  last_name: string;
+  patronymic: string;
+  email: string;
+  password: string;
 }

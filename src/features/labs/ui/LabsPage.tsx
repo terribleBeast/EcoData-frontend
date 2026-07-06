@@ -9,7 +9,7 @@ import { PageChapter } from "@/shared/ui/layout";
 
 interface LabMeta {
   onEdit: (row: ILabDataFull) => void;
-  onDelete: (lab_id: number) => void;
+  onDelete: (lab_id: string) => void;
 }
 
 const labColumns: MRT_ColumnDef<ILabDataFull>[] = [
@@ -18,22 +18,22 @@ const labColumns: MRT_ColumnDef<ILabDataFull>[] = [
     header: "Название",
     Cell: ({ row }) => (
       <Typography sx={{ cursor: "pointer" }}>
-        {row.original.organization_details?.name ?? "—"}
+        {row.original.name ?? "—"}
       </Typography>
     ),
   },
   {
-    accessorKey: "email",
-    header: "Email",
+    accessorKey: "organization.name",
+    header: "Организация",
     Cell: ({ row }) => (
-      <Typography>{row.original.organization_details?.email ?? "—"}</Typography>
+      <Typography>{row.original.organization?.name ?? "—"}</Typography>
     ),
   },
   {
-    accessorKey: "type",
-    header: "Тип",
+    accessorKey: "address.address_id",
+    header: "Адрес",
     Cell: ({ row }) => (
-      <Typography>{row.original.organization_type?.name ?? "—"}</Typography>
+      <Typography>{row.original.address?.address_id ?? "—"}</Typography>
     ),
   },
   {
@@ -92,7 +92,7 @@ const LabsPage = () => {
         meta={{
           onEdit: (lab: ILabDataFull) =>
             navigate(`/laboratories/${lab.id}/edit`),
-          onDelete: (lab_id: number) => {
+          onDelete: (lab_id: string) => {
             remove(lab_id);
           },
         }}

@@ -1,7 +1,7 @@
 import { Card } from "@mui/material";
 import { DialogPanel } from "@/shared/components/DialogPanel";
 import type { IChapterData } from "@/shared/types";
-import type { IAddressDataFull } from "@/shared/types/location";
+import type { IAddressDataFull } from "../types";
 import { DialogSection } from "@/shared/ui/layout";
 import { ChapterInfoTemplate } from "@/shared/ui/ChapterInfoTemplate";
 
@@ -11,32 +11,20 @@ export const AddressFullInfo = ({ address }: { address: IAddressDataFull }) => {
       title: "Адрес",
       fields: [
         {
-          name: "Страна",
-          value: address.settlement?.district?.region?.country?.name ?? "—",
+          name: "ID адреса",
+          value: address.id ?? "—",
         },
         {
-          name: "Регион",
-          value: address.settlement?.district?.region?.name ?? "—",
+          name: "Населённый пункт (ID)",
+          value: address.settlement_id ?? "—",
         },
         {
-          name: "Район",
-          value: address.settlement?.district?.name ?? "—",
+          name: "Улица (ID)",
+          value: address.street_id ?? "—",
         },
         {
-          name: "Населённый пункт",
-          value: address.settlement?.name ?? "—",
-        },
-        {
-          name: "Тип нас. пункта",
-          value: address.settlement?.settlement_type?.name ?? "—",
-        },
-        {
-          name: "Улица",
-          value: address.street?.name ?? "—",
-        },
-        {
-          name: "Дом",
-          value: address.house_number?.number ?? "—",
+          name: "Дом (ID)",
+          value: address.house_number_id ?? "—",
         },
       ],
     },
