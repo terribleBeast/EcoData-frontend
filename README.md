@@ -75,33 +75,31 @@ npm run preview        # Preview Vite build output
 npm run mock:generate  # Generate mock data
 npm run mock:server    # Start mock server
 ```
-
-> Note: if you need a production build script, add it to `package.json`, for example: `"build": "vite build"`.
-
-## Backend connection
-
-The frontend communicates with the backend REST API under:
-
-```text
-/api/v1
-```
-
-Analyzer batch processing uses WebSocket:
-
-```text
-ws://localhost:8000/api/v1/analyzer/ws/{genus_id}?token={jwt_token}
-```
-
-For browser WebSocket connections, the token is passed as a query parameter because the native browser `WebSocket` constructor cannot set custom `Authorization` headers.
-
-## Analyzer workflow
-
-1. User selects a plant genus.
-2. Frontend requests species with available models.
-3. User uploads images.
-4. User clicks processing button.
-5. Frontend opens a WebSocket session and sends images.
-6. Backend returns classification probabilities.
-7. Frontend updates image statuses and creates local leaf cards.
-8. User can open full information for images and leaves.
-9. User can later add created results to a research record.
+### Plan
+- [x] Fix error in design
+  - [x] Login / Sign in
+- [ ] Sections
+  - [x] Loading state
+  - [ ] Pages
+    - [ ] Analyzer
+      - [ ] to implement keystroke processing for moving between images
+    - [ ] User profile
+      - [ ] Implement page
+    - [ ] Researches
+    - [ ] Researchers
+    - [ ] Plants
+    - [ ] Laboratories
+    - [ ] Locations
+    - [ ] Login / Sign in
+      - [ ] Add "Forgot password"
+    - [x] Loading page
+    - [x] Not invalid page
+  - [ ] Error handling
+- [ ] Increase performance
+  - [x] Optimize rendering (RegPage, LoginPage, Analyzer)
+  - [x] Lazy load
+- [ ] Testing 
+  - [ ] Interface 
+  - [ ] Logic
+### Comments
+Some errors in registration and login process.
