@@ -7,9 +7,9 @@ export const apiConfig: FetchBaseQueryArgs = {
   baseUrl: `http://localhost:${port}/api/${apiVersion}`,
   // baseUrl: `/api/${apiVersion}`, // for testing
   // timeout: 30000,
-  // headers: {
-  //   "Cache-Control": "no-cache", // ← prevents 304
-  // },
+  headers: {
+    "Cache-Control": "no-cache", // ← prevents 304
+  },
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootStateType).auth.token;
     if (token) {

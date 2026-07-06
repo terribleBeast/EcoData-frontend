@@ -22,7 +22,7 @@ const PlantDetailDialog = () => {
   const { plantQuery, descriptionQuery } = usePlantDetail(id);
   const { pathname } = useLocation();
   const dialogType: DetailDialogModeType = getDialogType(pathname);
-
+  console.log(plantQuery.data);
   return (
     <GenericEntityDetailDialog<IPlantDataFull>
       mode={dialogType}

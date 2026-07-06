@@ -114,7 +114,7 @@ export const PlantFullInfo = ({
   if (descriptionQuery.isError) {
     return <QueryErrorState error={descriptionQuery.error} />;
   }
-
+  console.log(plant);
   return (
     <DialogPanel>
       <DialogSection title="Листья растения" width="70%">

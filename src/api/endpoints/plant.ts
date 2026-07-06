@@ -89,6 +89,7 @@ const normalizePlant = (raw: ApiObject): IPlantDataFull => {
     description: raw.description ?? null,
     location,
     plant_description: plantDescription,
+    leaves: raw.leaves,
   };
 };
 
@@ -119,7 +120,10 @@ export const plantEndpoints = apiSlice.injectEndpoints({
 
     getPlantById: builder.query<IPlantDataFull, UUID>({
       query: (id) => `/plants/${id}`,
-      transformResponse: (response: ApiObject) => normalizePlant(response),
+      transformResponse: (response: ApiObject) => {
+        console.log("plant", response);
+        return normalizePlant(response);
+      },
       providesTags: (_response, _error, id) => [{ type: "Plants", id }],
     }),
 

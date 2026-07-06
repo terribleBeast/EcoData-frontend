@@ -28,8 +28,9 @@ export const PlantLeavesList = ({ leaves = [] }: Props) => {
           <TableCell>№</TableCell>
           <TableCell>ID листа</TableCell>
           <TableCell>Индекс</TableCell>
+          <TableCell>Изображение</TableCell>
           <TableCell>Сторона света</TableCell>
-          <TableCell>Расположение на растении</TableCell>
+          <TableCell>Расположение</TableCell>
           <TableCell>Дата создания</TableCell>
         </TableRow>
       </TableHead>
@@ -40,6 +41,11 @@ export const PlantLeavesList = ({ leaves = [] }: Props) => {
             <TableCell>{index + 1}</TableCell>
             <TableCell>{leaf.leaf_id}</TableCell>
             <TableCell>{leaf.leaf_index ?? "—"}</TableCell>
+            <TableCell>
+              {leaf.image
+                ? `${leaf.image.width_px ?? "?"}×${leaf.image.height_px ?? "?"}`
+                : "—"}
+            </TableCell>
             <TableCell>{leaf.side_of_the_world?.name ?? "—"}</TableCell>
             <TableCell>{leaf.location_on_plant?.name ?? "—"}</TableCell>
             <TableCell>

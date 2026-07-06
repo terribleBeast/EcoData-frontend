@@ -48,6 +48,11 @@ export interface IPlantDescriptionFull {
 export type IPlantLeafData = {
   leaf_id: string;
   image_id?: string | null;
+  image?: {
+    image_id: string;
+    width_px?: number | null;
+    height_px?: number | null;
+  } | null;
   leaf_index?: number | null;
   side_of_the_world?: {
     side_of_the_world_id: string;
@@ -57,17 +62,15 @@ export type IPlantLeafData = {
     location_on_plant_id: string;
     name: string;
   } | null;
-  created_at?: string;
+  created_at: string;
 };
 
 export interface IPlantDataFull {
-  id: UUID;
-  location_id: UUID | null;
-  plant_description_id: UUID | null;
-  description: string | null;
-
-  location?: ILocation | null;
-  plant_description?: IPlantDescriptionFull | null;
+  plant_id: string;
+  location?: unknown;
+  plant_description?: unknown;
+  description?: string | null;
+  created_at?: string;
   leaves?: IPlantLeafData[];
 }
 

@@ -35,6 +35,7 @@ export const useLeavesState = () => {
           image,
           predictions: image.predictions,
           bestPrediction,
+          leaf_index: 0,
         });
       }
 
